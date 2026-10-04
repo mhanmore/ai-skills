@@ -24,11 +24,11 @@ This skill owns presentation construction and verification. A domain skill owns 
 - Use semantic headings, labelled controls, keyboard operation, visible focus, sufficient contrast, and textual equivalents for important graphics.
 - Respect `prefers-reduced-motion`.
 - Support desktop and mobile widths without fixed-viewport assumptions.
-- Aim below 10 MB. Warn when required attachment embedding makes that impractical, but do not replace embedded attachments with sidecar files.
+- Aim below 10 MB when the artifact has no binary attachments. Embedded files increase size by roughly one third because of base64; report the resulting size when material, but never omit an attachment or create a sidecar to meet the target.
 - Keep data and presentation separable: prefer a dedicated `<script type="application/json">` block for structured data and a small configuration/profile object for field mappings and semantic behavior.
 - Treat all inserted source text as data, not markup; escape or safely assign it. Never interpolate untrusted text into `innerHTML`, executable script, CSS, or `document.write`.
 
-When the output includes source documents or other attachments, follow [embedded-source-documents.md](embedded-source-documents.md). Every included attachment must be encoded inside the HTML file; never ship sibling or sidecar files. External hyperlinks remain permissible only as citations to material that is not included as an attachment.
+When the output includes source documents or other attachments, following [embedded-source-documents.md](embedded-source-documents.md) is mandatory. Do not improvise a different attachment mechanism. Every included attachment must be base64-encoded in the HTML attachment registry and exposed through working **View** and **Download** controls backed by decoded `Blob` objects. Never emit an attachment path, `file://` URL, sibling file, sidecar, or network fetch. External hyperlinks remain permissible only as citations to material that is not included as an attachment.
 
 ## Verify and deliver
 

@@ -10,6 +10,7 @@ Verify observable behavior, not only source appearance.
 - No accidental runtime dependency: external script/style source, `@import`, remote CSS `url()`, remote display image/iframe, `fetch`, dynamic import, module import, CDN, or hosted font.
 - Intentional reference hyperlinks are clearly identifiable and do not supply required UI resources.
 - Every claimed attachment is present in the encoded registry; no attachment resolves to a sibling, sidecar, or local filesystem dependency.
+- Every attachment record contains the complete base64 payload, original byte length, MIME type, safe filename, and SHA-256 digest.
 - No placeholder, scaffold, or fallback text remains.
 
 ## Behavioral checks
@@ -23,5 +24,6 @@ Verify observable behavior, not only source appearance.
 - Inspect for console errors.
 - Review print/PDF output for legibility.
 - For SVG/diagrams, check label overlap, clipping, and container resizing.
+- For every embedded attachment, exercise both View and Download. Hash the downloaded bytes and confirm they exactly match the original attachment.
 
 When domain profiles state invariants, add focused tests for them. A generic “page loads” check is insufficient.

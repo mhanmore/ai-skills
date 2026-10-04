@@ -16,7 +16,7 @@ A full-document reading experience, not a change-log table. Reproduce every text
 - Inline redlines for enabled changes and clean treatment of untouched text.
 - Expandable supporting evidence: classification, reason, mismatch/verification notes, and citations.
 - Inline unresolved-order/conflict warnings without guessing a result.
-- Non-textual schedules represented at their native position, encoded into and accessible from the single HTML file.
+- Non-textual schedules represented at their native position, encoded into the HTML attachment registry, and accessible through separate View and Download controls.
 
 ## Semantic invariants
 
@@ -26,4 +26,4 @@ A full-document reading experience, not a change-log table. Reproduce every text
 - An unamended clause has no artificial badge or disclosure control.
 - Keep the redline legend separate from change-category legends.
 - The scope banner must summarize `scope_note`, not conceal execution uncertainty or open cross-reference flags.
-- Every included source or attachment must be encoded in the HTML; linked sibling and sidecar files are prohibited.
+- Every included source or attachment must be encoded in the HTML attachment registry and recoverable byte-for-byte through a Download control; linked sibling and sidecar files are prohibited.

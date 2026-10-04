@@ -39,4 +39,4 @@ Test the narrowest scope: its own, parent, and site-wide conditions must appear;
 - Explain that no record found is not proof that discharge is unnecessary and says nothing about construction progress.
 - Make `partially_discharged` rationale immediately available in expanded detail.
 
-Source buttons must not accidentally trigger row expansion. Every source document included with the register must be encoded inside the HTML and opened through the renderer's embedded-document mechanism; do not create sibling or sidecar source files.
+Source buttons must not accidentally trigger row expansion. Every source document included with the register must be encoded inside the HTML attachment registry and exposed through separate View PDF and Download PDF controls using the renderer's required Blob mechanism. Source-page controls should pass the cited page to the viewer; downloads must recover the complete original PDF. Do not create sibling or sidecar source files.

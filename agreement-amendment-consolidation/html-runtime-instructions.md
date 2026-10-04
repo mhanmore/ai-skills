@@ -1,4 +1,4 @@
-# HTML rendering profile: full agreement redline
+# HTML runtime instructions: full agreement redline
 
 Pass this profile and the validated canonical agreement model to `render-response-as-html` when HTML is explicitly requested.
 
@@ -21,9 +21,9 @@ A full-document reading experience, not a change-log table. Reproduce every text
 ## Semantic invariants
 
 - Instrument toggles control already-modelled amendment layers; JavaScript must not re-interpret source language.
-- A sensible Level 3 default may enable executed instruments in verified order. Otherwise default conservatively and state the starting combination explicitly.
+- When execution status and order are independently verified, a sensible default may enable executed instruments in that verified order. Otherwise default conservatively and state the starting combination explicitly.
 - Never disable a toggle merely because an instrument is draft or unsigned.
 - An unamended clause has no artificial badge or disclosure control.
 - Keep the redline legend separate from change-category legends.
-- The scope banner must summarize `scope_note`, not conceal execution uncertainty or open cross-reference flags.
+- The scope banner must present `review_summary` in ordinary language and must not conceal execution uncertainty or open cross-reference flags. Keep structured review details available behind an “About this consolidation” disclosure rather than exposing raw schema keys.
 - Every included source or attachment must be encoded in the HTML attachment registry and recoverable byte-for-byte through a Download control; linked sibling and sidecar files are prohibited.

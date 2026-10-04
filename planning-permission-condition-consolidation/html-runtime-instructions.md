@@ -1,4 +1,4 @@
-# HTML rendering profile: conditions register
+# HTML runtime instructions: conditions register
 
 Pass this profile and the validated canonical JSON to `render-response-as-html` when HTML is explicitly requested.
 
@@ -13,7 +13,7 @@ A register optimized for scanning conditions, filtering applicability, and openi
 - Filter independently by category, scope, trigger stage, and status.
 - Sort without losing expansion state where practical.
 - Expand each condition to show current wording, reason, amendment history, discharge rationale, applications, caveats, and sources.
-- Keep the full methodological `scope_note` and family/gap detail accessible without placing it verbatim in the landing header.
+- Present `review_summary` in ordinary language near the register and keep the structured `review_scope`, family index, and gap detail accessible in an “About this register” disclosure. Never display an internal tier or raw scope keys to users.
 
 ## Scope-filter invariant
 

@@ -7,33 +7,35 @@ description: Consolidate the numbered conditions of a planning permission or com
 
 Build an evidence-traceable canonical record of every condition, its wording history, taxonomy, and the limits of the review. Preserve source language and distinguish formal source outcomes from analytical assessments.
 
-HTML is not an automatic output of this skill. When the user requests HTML or an interactive tracker, also use the standalone `render-response-as-html` skill and pass it the rendering profile in [html-rendering-profile.md](html-rendering-profile.md). For other output formats, use the same canonical data without invoking the HTML renderer.
+Read [consolidation-spec.md](consolidation-spec.md) completely before performing the consolidation. HTML is not an automatic output. When the user requests HTML or an interactive tracker, also use the standalone `render-response-as-html` skill and read [html-runtime-instructions.md](html-runtime-instructions.md) completely. For other output formats, use the same canonical data without invoking the HTML renderer.
 
-## Choose the operating level
+## Establish the review scope
 
-- **Level 1 — supplied documents:** consolidate the principal instrument and supplied amendments only. Do not imply that the family is complete or assess discharge.
-- **Level 2 — supplied documents plus search:** search the available, authorized corpus for missing amendments and family members. Report known-but-unread documents and unresolved gaps. Do not assess discharge unless the underlying material can be read.
-- **Level 3 — documentary compliance review:** additionally read the discharge/compliance submissions and decisions, then assess their coverage against each condition's current wording.
+Do not use or expose tier labels. Determine the work from the user's request, the readable documents, and the authorized sources actually available. Treat these as independent evidence dimensions:
 
-Name the achieved level in `scope_note`. Never silently downgrade a review when the necessary material is available. A prior family index may accelerate discovery, but verify its provenance, date, and coverage before relying on it.
+- **Core consolidation:** always identify the principal instrument, extract every condition, and apply every supplied/readable amendment.
+- **Family completeness check:** when an authorized searchable corpus is available and the request warrants it, search for missing amendments and family members. Otherwise state plainly that no independent family search was performed.
+- **Documentary compliance assessment:** when readable discharge/compliance submissions and decisions are available and within scope, assess their coverage against current condition wording. Otherwise use `not_assessed`; do not infer status from absence.
+
+Record the dimensions in structured `review_scope` fields and write a short `review_summary` in ordinary language. Never ask the user to choose an internal tier, and never show internal scope keys as unexplained labels. A prior family index may accelerate discovery, but verify its provenance, date, and coverage before relying on it.
 
 ## Workflow
 
-1. Build a family index of the principal instrument, every identified amendment, and—at Level 3—every discharge/compliance application. Record references, dates, outcomes, targets, readable/unreadable status, and sources.
+1. Build a family index of the principal instrument, every identified amendment, and any discharge/compliance applications within the review scope. Record references, dates, outcomes, targets, readable/unreadable status, and sources.
 2. Extract every numbered condition and reason from the principal instrument verbatim. Preserve numbering defects and document group headings; never silently renumber.
-3. Apply amendments in chronological or legally established order. Keep every version in `amendment_history`, with the complete text, a concise change summary, and a page-level source.
-4. At Level 3, assess documentary discharge/compliance coverage against the latest amended wording. Follow [discharge-assessment.md](discharge-assessment.md).
-5. Assemble and programmatically validate the canonical JSON using [schema.md](schema.md).
-6. Derive trigger, category, and hierarchical scope taxonomies from the actual document family. Follow [taxonomy.md](taxonomy.md).
+3. Apply amendments in chronological or legally established order. Keep every version in `amendment_history`, with the complete text, a concise change summary, and a page-specific source.
+4. When documentary compliance assessment is in scope, assess coverage against the latest amended wording using the consolidation specification.
+5. Assemble and programmatically validate the canonical JSON using the consolidation specification.
+6. Derive trigger, category, and hierarchical scope taxonomies from the actual document family using the consolidation specification.
 7. Write one short, discriminating subject-matter sentence per condition. Describe the obligation, not its discharge status.
-8. Deliver the canonical data and a concise explanation of level, sources, gaps, and material uncertainties. If HTML was requested, render from the canonical data without re-deriving legal or factual judgments in the presentation layer.
+8. Deliver the canonical data and a concise explanation of sources reviewed, searches performed, assessments performed, gaps, and material uncertainties. If HTML was requested, render from the canonical data without re-deriving legal or factual judgments in the presentation layer.
 
 ## Essential constraints
 
 - Cover every condition, not only amended or discharged conditions.
 - Assess the current amended text, never superseded wording.
 - Keep the source's formal decision separate from the analytical coverage assessment.
-- Describe Level 3 results as a documentary coverage assessment, not an unqualified legal conclusion or a claim about construction progress.
+- Describe compliance results as a documentary coverage assessment, not an unqualified legal conclusion or a claim about construction progress.
 - Absence of a discharge record means only that none was found in the reviewed sources.
 - Use scripts for completeness, referential-integrity, enumeration, and closed-set validation; use judgment for substantive summaries and coverage assessments.
 - Preserve exact source pointers for current wording, every amendment, and every discharge/compliance record.

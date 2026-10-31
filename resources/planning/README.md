@@ -6,9 +6,10 @@ Earlier ad-hoc skills are in `archive/`. They pre-date this library and keep the
 
 | Skill | Role |
 | --- | --- |
-| `/local-search` | Adds a search to the matter graph; answers questions about the search |
-| `/permission-family` | Reviews instruments, links families and branches, lists the documents to obtain |
-| `/permission-conditions` (planned) | Derives a condition register from the family graph. The archived consolidation spec (taxonomy, documentary coverage assessment) is its starting point. |
+| `@local-search` | Adds a search to the matter graph; answers questions about the search |
+| `@decision-notice` | Adds planning instruments (decision notices, appeal letters, approvals) to the matter graph, creating permissions and conditions; answers questions about them |
+| `@permission-family` | Analysis only: reads the graph, adds candidate links, maps families and branches, lists the documents to obtain |
+| `@permission-conditions` (planned) | Derives a condition register from the family graph. The archived consolidation spec (taxonomy, documentary coverage assessment) is its starting point. |
 
 Skills share one matter graph per matter (PKG). Each skill adds to it, so evidence builds up across rounds as the user supplies better documents.
 
@@ -47,12 +48,13 @@ Future work: `schemas/planning/` (JSON Schemas, which will become the source of 
 
 ## Skill naming and filing
 
-Skills are invoked as `/name` inside plain-English prompts ("read the /local-search and summarise the planning history"). The convention follows from that:
+Skills are referenced as `@name`, both inside plain-English prompts ("read the @local-search and summarise the planning history") and when one skill calls another. The convention follows from that:
 
-- **Name the document or object, not the operation.** The verb comes from the prompt. Examples: `/local-search`, and later perhaps `/decision-notice`, `/planning-obligation` or `/permission-family`. Avoid names like `search-graph`, `ingest-search` or `summarise-history`.
-- **Lowercase kebab-case, two or three words.** It must read naturally after "the" in a sentence, and must not collide with harness built-ins or generic words such as `/search` or `/review`.
+- **Name the document or object, not the operation.** The verb comes from the prompt. Examples: `@local-search`, `@decision-notice`, and later perhaps `@planning-obligation`. Avoid names like `search-graph`, `ingest-search` or `summarise-history`.
+- **Lowercase kebab-case, two or three words.** It must read naturally after "the" in a sentence, and must not collide with harness built-ins or generic words such as `@search` or `@review`.
 - **One skill per document type.** It covers every request about that document: build or reuse the graph package, then respond. Different outputs are sections within the skill, not separate skills.
-- **Layout:** `skills/<name>/SKILL.md`, where the directory name equals the frontmatter `name`. A skill loads at most three resource bundles (the four-file cap).
+- **Layout:** `skills/<name>/SKILL.md`, where the directory name is the `@` id: the label lowercased and hyphenated. One live instance of each skill is deployed, unversioned, so the id never changes once live. A skill loads at most three resource bundles (the four-file cap).
+- **Document skills and analysis skills.** A document skill (`@local-search`, `@decision-notice`) reads one document type into the graph and is the only route by which that type's nodes and stated links enter it. An analysis skill (`@permission-family`, `@permission-conditions`) reads the graph, never the documents, and adds only inferred links, flags and derived views. Where an analysis skill finds unread documents, it calls the document skill on them (`@decision-notice`) and continues from the revision that skill writes.
 - **The matter graph is the handoff between skills** (PKG-01). A later skill reads and enriches `matters/<matter_id>/graph.json` rather than re-reading PDFs. Derived views sit beside it (PKG-08).
 
 - **Skill-local files:** `SKILL.md` plus `outputs.md` (templates and examples of wrong versus right output). Domain rules stay in the shared bundles; examples cite rule IDs rather than restating them.
@@ -87,7 +89,7 @@ A skill declares the bundles it loads, the rule IDs it relies on or overrides (f
 
 ## Future features
 
-- **Portal traversal** for family completeness (finding missing reserved-matters approvals, condition decisions and s96A amendments on LPA planning portals). This is blocked until the harness provides richer web interaction; better tooling for `*.gov.uk` has been requested from the provider. When it arrives, `/permission-family` step 6 becomes an optional search step, and portal results enter as context sources (READ-06) until instruments are reviewed.
+- **Portal traversal** for family completeness (finding missing reserved-matters approvals, condition decisions and s96A amendments on LPA planning portals). This is blocked until the harness provides richer web interaction; better tooling for `*.gov.uk` has been requested from the provider. When it arrives, `@permission-family` step 3 becomes an optional search step, and portal results enter through `@decision-notice` as context sources (READ-06) until instruments are reviewed.
 
 ## Ingestion workflow (brief for the future search-ingestion skill)
 

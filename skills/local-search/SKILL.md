@@ -9,8 +9,9 @@ description: >-
   local search", "what does the CON29 say about tree preservation orders?",
   "read the search pack" or "add the search to the matter graph". Do not
   activate for drainage and water searches (CON29DW), coal mining searches
-  (CON29M), environmental reports or title documents, or for mapping
-  permission families, which the Permission Family skill handles.
+  (CON29M), environmental reports or title documents; for planning
+  decision notices, which @decision-notice handles; or for mapping
+  permission families, which @permission-family handles.
 userFacingDescription: >-
   Reads a local authority search (LLC1 and CON29) into a structured,
   page-referenced record and answers questions from it, such as planning
@@ -132,7 +133,7 @@ Data minimisation: omit applicants' personal names (e.g. "Issued to: …") unles
   - a link stated against a permission ("variation of condition 2 of 19/01234/FUL", "reserved matters pursuant to 19/01234/OUT") targets the cited record's `application` node if it is in the graph, otherwise an `unresolved_reference`;
   - a link stated against a condition ("details pursuant to condition 3 of 19/01234/OUT") always targets an `unresolved_reference` for that permission and condition number, holding `candidate_parent_node_id` where the cited application is in the graph;
   - the source is the decision where an outcome is stated, otherwise the application. A pending, withdrawn or undecided application carries the link as proposed (`attributes.proposed: true`).
-- **Candidate links** (HAND-03): add `possibly_related_to` only where a reference pattern (`/RM`, `/NMA`, `/DIS`, `/DOC`, a shared stem with a procedure suffix) or substantive wording suggests a procedural connection. A shared address, the same search or the chronology alone does not need an edge; the Permission Family skill generates those candidates when it maps a family.
+- **Candidate links** (HAND-03): add `possibly_related_to` only where a reference pattern (`/RM`, `/NMA`, `/DIS`, `/DOC`, a shared stem with a procedure suffix) or substantive wording suggests a procedural connection. A shared address, the same search or the chronology alone does not need an edge; @permission-family generates those candidates when it maps a family.
 
 ### 6. Read components together
 
@@ -170,7 +171,9 @@ Answer only from the graph. Use the templates in [outputs.md](references/outputs
 - **Planning history (T1):** merge appearances of the same record (RESP-07) and show every source. Order rows by the earliest labelled date, and say which label was used. Include refusals, withdrawals and pending items. List building control separately, and only on request.
 - **Summary (T2):** go through each component in order. Mention every gap and exception.
 - **Specific question (T3):** quote the relevant response or entry. A Part 3 answer is always read together with the LLC (CON29R-03).
-- **Every reply** ends with the footer (T4). For family structure, suggest the Permission Family skill.
+- **Family questions:** if the request asks about a permission's family or the documents missing from it, call @permission-family once the graph is written and give its answer. Otherwise offer it in one line.
+- **Conditions or operative wording** of a record known only from the search: say the search does not give them, and that @decision-notice reads the decision notice once supplied.
+- **Every reply** ends with the footer (T4).
 
 ## When the user asks to test this skill
 

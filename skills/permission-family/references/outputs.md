@@ -57,33 +57,25 @@ Evidence cut-off: [date] · Graph: [location] r[n]
 Each pair shows the mistake (✗) and the correct version (✓).
 
 **E1 · s73 drawn as an amendment (FAM-06)**
-✗ `EX/22/0111/VAR` listed as a child amendment, with the parent's condition 4 overwritten
-✓ `EX/22/0111/VAR` is a new `permission` node linked to its parent by `varies_under_s73`. It is drawn as a branch head with its own full condition set, and the parent node is unchanged.
+✗ `EX/22/0111/VAR` listed as a child amendment of the outline, with the outline's condition 4 shown as changed
+✓ `EX/22/0111/VAR` drawn as a branch head (`⎇`) under the outline, with its own children; the outline's conditions are shown unchanged
 
-**E2 · s96A treated as a new permission (S96A-01)**
-✗ A `permission` node for EX/21/0789/NMA
-✓ A `decision` node with `procedure: s96a`, linked to its target by `amends_under_s96a`
-
-**E3 · Approval copied across branches (COND-05, FAM-09)**
+**E2 · Approval copied across branches (COND-05, FAM-09)**
 ✗ Condition 9 of EX/22/0111/VAR marked "approved", because EX/23/0222/DOC approved condition 9 of the outline
-✓ The link targets the condition the decision cites. Flag `branch_target_ambiguous`; no link to the s73 branch.
+✓ EX/23/0222/DOC drawn against the condition it cites, flagged `branch_target_ambiguous`; nothing placed on the s73 branch
 
-**E4 · Candidate promoted from a reference pattern (REL-02)**
+**E3 · Candidate promoted from a reference pattern (REL-02)**
 ✗ "EX/19/0123/OUT/A is an NMA to the outline."
-✓ `possibly_related_to`, basis "reference suffix", listed under candidates until a document states the link
+✓ `possibly_related_to`, basis "reference suffix", listed under candidates until @decision-notice records wording that states the link
 
-**E5 · Permission from search evidence (PERM-02)**
-✗ A `permission` node for EX/22/0111/VAR, from a search row reading "Granted"
-✓ An application and decision at `search_report_only`, with the decision notice listed under documents to obtain
+**E4 · Search-only member drawn as a permission (PERM-02)**
+✗ EX/22/0111/VAR shown as a reviewed s73 permission, from a search row reading "Granted"
+✓ Shown as `[S]` with ⚑ `search_only_member`, and its decision notice listed first under documents to obtain
 
-**E6 · Operative conclusion (CORE-04, FAM-04)**
+**E5 · Operative conclusion (CORE-04, FAM-04)**
 ✗ "The s73 permission superseded the outline, which has lapsed."
 ✓ "Two branch heads are recorded (EX/19/0123/OUT, EX/22/0111/VAR). ⚑ overlapping_permissions: no conclusion drawn on which is operative."
 
-**E7 · Issue date inferred (EVID-06, PERM-07)**
-✗ "Issued: 12/03/2020", copied from the committee resolution date
-✓ "Committee resolution: 18/12/2019; decision: 12/03/2020 (as printed). Issue date: not stated."
-
-**E8 · Search description treated as operative (PERM-05)**
-✗ Operative description "Erection of dwellings" (the truncated search wording)
-✓ `description_source` (search): "Erection of dwellings"; `description_operative` (notice p1): "Erection of up to 120 dwellings with associated access…"
+**E6 · Reading an instrument during family mapping (contract)**
+✗ Opening an uploaded decision notice and adding its conditions to the family view directly
+✓ Calling @decision-notice on EX-22-0111-VAR.pdf, then mapping from the revision it writes. The footer lists the notice under instruments reviewed.

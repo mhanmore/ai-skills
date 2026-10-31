@@ -16,16 +16,18 @@ Confirmed from Legora's own skill files.
 - **`name`:** never add one. Legora assigns it (e.g. `org-html-response-CIkUA`). When updating an existing skill, keep the `name` from its exported copy exactly as it is.
 - **No other fields.** Put status and rules version in the body, not the frontmatter.
 - **Supporting files:** use skill-relative paths under `references/`.
+- **Skill references:** one skill calls another with `@<skill-id>`, e.g. `@decision-notice`. The id is the skill folder name: the label lowercased and hyphenated (Local Search → `local-search`). Never rename a live skill's label or folder, because other skills call it by that id.
 - **Tools:** describe actions; don't name internal tools. Use capability chips where a step needs one, e.g. `[@ kind="capability" id="document-reading" label="Document reading"]`. Known ids: `document-reading`, `charts-and-diagrams`.
 
 Repository skills are written directly in this format.
 
 ## Upload checklist
 
-1. Import the ZIP from `builds/`, or create the skill by hand: paste `SKILL.md`, then attach every other listed file at the path shown.
+1. Import the ZIP from `builds/`, or create the skill by hand: paste `SKILL.md`, then attach every other listed file at the path shown. The upload replaces the live skill with the same label; there is one live instance of each skill and no versioned copies.
 2. Leave the files exactly as they are. Don't let a platform skill-builder regenerate or summarise them, because rule IDs (e.g. `PERM-02`) cross-reference between files.
 3. When a skill is updated, export it first and copy its `name:` line into the new `SKILL.md`.
 4. After a resource changes, rebuild every skill listed against it in the [index by resource](#index-by-resource).
+5. Upload every rebuilt skill in the same sitting. Skills call each other by id, so a live mix of old and new skills can disagree about which skill creates which nodes.
 
 ## ZIP layout
 
@@ -37,16 +39,7 @@ Repository skills are written directly in this format.
     └── <each resource listed for the skill>
 ```
 
-Builds are committed to `builds/` as `<skill-folder>-v<rules version>.zip`. Never overwrite a build; a new rules version gets a new file. Links between resources stay valid because they share a folder. Exception: `core.md`'s pointer to `local-authority-searches.md` dangles in Permission Family. It's harmless, because that skill never needs the search bundle.
-
-| Build | Rules version | Date | Status |
-| --- | --- | --- | --- |
-| `builds/local-search-v0.1-draft.zip` | 0.1-draft | 2026-10-31 | Superseded: Legora rejected its frontmatter |
-| `builds/permission-family-v0.1-draft.zip` | 0.1-draft | 2026-10-31 | Superseded: Legora rejected its frontmatter |
-| `builds/local-search-v0.2-draft.zip` | 0.2-draft | 2026-10-31 | Superseded: efficiency refinements in 0.3 |
-| `builds/permission-family-v0.2-draft.zip` | 0.2-draft | 2026-10-31 | Superseded: core.md changed in 0.3 |
-| `builds/local-search-v0.3-draft.zip` | 0.3-draft | 2026-10-31 | Current |
-| `builds/permission-family-v0.3-draft.zip` | 0.3-draft | 2026-10-31 | Current |
+Builds are committed to `builds/` as `<skill-folder>.zip`, one per skill, and rebuilt in place whenever the skill or a resource it lists changes. Git history is the record of earlier builds. Links between resources stay valid because they share a folder. Exception: `core.md`'s pointer to `local-authority-searches.md` dangles in Decision Notice and Permission Family. It's harmless, because neither skill needs the search bundle.
 
 ## Local Search (`skills/local-search/`)
 
@@ -60,28 +53,39 @@ Reads a local authority search into the matter graph and answers questions about
 | `references/local-authority-searches.md` | `resources/planning/local-authority-searches.md` | Always | SRCH, RESP, LLC, CON29R, CON29O, HAND |
 | `references/permissions.md` | `resources/planning/permissions.md` | Always (planning handoff) | PERM-01/02/05/06, FAM-08 |
 
+## Decision Notice (`skills/decision-notice/`)
+
+Reads planning instruments into the matter graph, creating permissions and conditions, and answers questions about them.
+
+| Path in skill | Source in repo | Loaded | Rules relied on |
+| --- | --- | --- | --- |
+| `SKILL.md` | `skills/decision-notice/SKILL.md` | Always | |
+| `references/outputs.md` | `skills/decision-notice/references/outputs.md` | At the Emit and Respond steps | Templates T1–T6, examples E1–E11 |
+| `references/core.md` | `resources/planning/core.md` | Always | CORE, VOCAB, REL, EVID, PKG, CUR |
+| `references/permissions.md` | `resources/planning/permissions.md` | Always | PERM, READ, S73, S96A, RM, COND, ROUTE, FAM-08 |
+
 ## Permission Family (`skills/permission-family/`)
 
-Maps a permission family from the matter graph and supplied instruments, and lists the documents to obtain.
+Maps a permission family from the matter graph, and lists the documents to obtain. Calls `@local-search` and `@decision-notice` for documents not yet read.
 
 | Path in skill | Source in repo | Loaded | Rules relied on |
 | --- | --- | --- | --- |
 | `SKILL.md` | `skills/permission-family/SKILL.md` | Always | |
-| `references/outputs.md` | `skills/permission-family/references/outputs.md` | At the Respond step | Templates T1–T4, examples E1–E8 |
+| `references/outputs.md` | `skills/permission-family/references/outputs.md` | At the Respond step | Templates T1–T4, examples E1–E6 |
 | `references/core.md` | `resources/planning/core.md` | Always | CORE, VOCAB, REL, EVID, PKG, CUR |
-| `references/permissions.md` | `resources/planning/permissions.md` | Always | PERM, READ, S73, S96A, RM, COND, ROUTE, FAM |
+| `references/permissions.md` | `resources/planning/permissions.md` | Always | PERM-02, S73-01, S96A-01, COND-05, FAM |
 
 ## Index by resource
 
 | Resource | Used by |
 | --- | --- |
-| `resources/planning/core.md` | Local Search, Permission Family |
-| `resources/planning/permissions.md` | Local Search, Permission Family |
+| `resources/planning/core.md` | Local Search, Decision Notice, Permission Family |
+| `resources/planning/permissions.md` | Local Search, Decision Notice, Permission Family |
 | `resources/planning/local-authority-searches.md` | Local Search |
 
 ## Maintaining this file
 
 - Update this file in the same change as any edit to a skill's **Load** section or its local files.
 - Each skill's **Load** list and its table here must match exactly.
-- Bump the rules version when any rule is added, retired or changes meaning, and note the date. Change it here and in the "Rules version" line of every `SKILL.md`; skills record it in the matter graph (PKG-07).
+- Bump the rules version when any rule is added, retired or changes meaning, and note the date. Change it here and in the "Rules version" line of every `SKILL.md`; skills record it in the matter graph (PKG-07), so a graph built under older rules can be re-extracted. The rules version is a data version only; builds and deployments are not versioned.
 - `README.md` files and `archive/` are never uploaded.

@@ -44,6 +44,8 @@ Calls run one way only: `permission-family` calls `local-search` and `decision-n
 | `permission-family` | `@local-search` | Introduction, the paragraph beginning "This is an analysis skill" |
 | `permission-family` | `@decision-notice` | Introduction, the same paragraph (after `@local-search`) |
 
+`html-presentation` has no rows: it calls no skill and no skill calls it. Users chain it in the prompt ("map the family, then present it with @html-presentation"), so it needs no hand-linking. Its frontmatter names the planning skills by plain id only.
+
 The `references/outputs.md` files also mention `@decision-notice` (Permission Family, examples E3 and E6) and `@permission-family` (Decision Notice, template T6). They need no link: once the first reference in `SKILL.md` is linked, the agent has that skill's platform ID in context, and every later `@` reference to it resolves.
 
 ## ZIP layout
@@ -92,6 +94,17 @@ Maps a permission family from the matter graph, and lists the documents to obtai
 | `references/core.md` | `resources/planning/core.md` | Always | CORE, VOCAB, REL, EVID, PKG, CUR |
 | `references/permissions.md` | `resources/planning/permissions.md` | Always | PERM-02, S73-01, S96A-01, COND-05, FAM |
 
+## HTML Presentation (`skills/html-presentation/`)
+
+Presents an answer, dataset or matter graph as one self-contained HTML file, with every cited source document embedded. Loads no shared resources; its planning profile restates the display rules it needs, citing rule IDs for maintainers.
+
+| Path in skill | Source in repo | Loaded | Rules relied on |
+| --- | --- | --- | --- |
+| `SKILL.md` | `skills/html-presentation/SKILL.md` | Always | |
+| `references/embedding.md` | `skills/html-presentation/references/embedding.md` | Whenever documents are embedded | |
+| `references/planning-views.md` | `skills/html-presentation/references/planning-views.md` | Planning graph content | Restates CORE-04/05, EVID-01/05/06, PKG-04/07/08, VOCAB-04, COND-03, CON29R-03, FAM-04, CUR-01 |
+| `references/outputs.md` | `skills/html-presentation/references/outputs.md` | At the Verify and Deliver steps | Templates T1–T3, examples E1–E11 |
+
 ## Index by resource
 
 | Resource | Used by |
@@ -104,5 +117,6 @@ Maps a permission family from the matter graph, and lists the documents to obtai
 
 - Update this file in the same change as any edit to a skill's **Load** section or its local files.
 - Each skill's **Load** list and its table here must match exactly.
+- When the rules version is bumped, re-check `skills/html-presentation/references/planning-views.md` against the changed rules and update its "Written for rules version" line and the matching line in its `SKILL.md`.
 - Bump the rules version when any rule is added, retired or changes meaning, and note the date. Change it here and in the "Rules version" line of every `SKILL.md`; skills record it in the matter graph (PKG-07), so a graph built under older rules can be re-extracted. The rules version is a data version only; builds and deployments are not versioned.
 - `README.md` files and `archive/` are never uploaded.

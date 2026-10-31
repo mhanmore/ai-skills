@@ -13,6 +13,25 @@ Rules version: **0.1-draft** (2026-10-31)
 5. Paste the files as they are. Don't let a platform skill-builder regenerate or summarise them: rule IDs (e.g. `PERM-02`) are cross-references between files.
 6. After any resource changes, re-upload that resource to every skill listed against it in the [index by resource](#index-by-resource).
 
+## ZIP import
+
+Where a platform accepts ZIP import (e.g. Legora), package each skill as:
+
+```text
+<skill-name>/
+├── SKILL.md          links rewritten: ../../resources/planning/<file> → resources/<file>
+├── outputs.md
+└── resources/
+    └── <each resource listed for the skill>
+```
+
+Built ZIPs are committed to `builds/` as `<skill-name>-v<rules version>.zip`. Never overwrite a published build; a new rules version gets a new file. Links between resources stay valid because they share a folder.
+
+| Build | Rules version | Date | Contents |
+| --- | --- | --- | --- |
+| `builds/local-search-v0.1-draft.zip` | 0.1-draft | 2026-10-31 | SKILL.md, outputs.md, resources/core.md, resources/local-authority-searches.md, resources/permissions.md |
+| `builds/permission-family-v0.1-draft.zip` | 0.1-draft | 2026-10-31 | SKILL.md, outputs.md, resources/core.md, resources/permissions.md | Exception: `core.md`'s pointer to `local-authority-searches.md` dangles in `/permission-family`. It's harmless, because that skill never needs the search bundle.
+
 ## /local-search
 
 Reads a local authority search into the matter graph and answers questions about it.

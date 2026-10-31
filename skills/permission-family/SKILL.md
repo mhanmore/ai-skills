@@ -6,6 +6,8 @@ status: draft
 
 # Permission family
 
+Rules version: 0.1-draft. Record it in the graph manifest (PKG-07).
+
 Typical prompts: "map the /permission-family for 19/01234/OUT", "here are the decision notices; update the /permission-family", "which /permission-family does 21/00456/NMA belong to?", "what's missing from the /permission-family?".
 
 Every request goes through the same three stages:
@@ -20,6 +22,7 @@ Each round of user-supplied documents raises evidence levels: search-reported re
 Read these completely before starting:
 1. [core.md](../../resources/planning/core.md)
 2. [permissions.md](../../resources/planning/permissions.md)
+3. [outputs.md](outputs.md), the templates and examples, read at the Respond step
 
 ## Locate the inputs
 
@@ -105,25 +108,12 @@ Record `family_search.performed: false`. The harness cannot yet traverse plannin
 
 ## Respond
 
-- **Family view:** an indented tree. List the root first; then the branch heads (s73 and s73A permissions), each with its children in date order. Each line shows:
-  - the reference;
-  - the procedure label;
-  - the description, verbatim, shortened with "…" if long;
-  - the outcome;
-  - the date and its label;
-  - an evidence marker (`[I]` instrument reviewed, `[S]` search only);
-  - any flags.
+Use the templates in [outputs.md](outputs.md), and check the reply against its examples before sending.
 
-  List candidates and unresolved references in separate sections after the tree.
-- **Diagram:** only if asked. A Mermaid `graph TD`: solid arrows for stated links; a distinct style for s73 branch edges; dashed arrows for candidates.
-- **Documents to obtain:** the ranked list from step 6, with the reason for each.
-- **Every reply** ends with:
-  - the instruments reviewed;
-  - whether a family search was performed;
-  - the evidence cut-off;
-  - the graph path and revision.
-
-  Do not say which permission is operative, current or lapsed.
+- **Family view (T1):** list the root first; then the branch heads (s73 and s73A permissions), each with its children in date order. Descriptions are verbatim, shortened with "…" if long. Candidates and unresolved references go in separate sections after the tree.
+- **Documents to obtain (T2):** the ranked list from step 6, with the reason for each.
+- **Diagram (T3):** only if asked.
+- **Every reply** ends with the footer (T4). Do not say which permission is operative, current or lapsed.
 
 ## Flag codes
 

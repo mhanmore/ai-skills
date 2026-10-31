@@ -55,6 +55,9 @@ Skills are invoked as `/name` inside plain-English prompts ("read the /local-sea
 - **Layout:** `skills/<name>/SKILL.md`, where the directory name equals the frontmatter `name`. A skill loads at most three resource bundles (the four-file cap).
 - **The matter graph is the handoff between skills** (PKG-01). A later skill reads and enriches `matters/<matter_id>/graph.json` rather than re-reading PDFs. Derived views sit beside it (PKG-08).
 
+- **Skill-local files:** `SKILL.md` plus `outputs.md` (templates and examples of wrong versus right output). Domain rules stay in the shared bundles; examples cite rule IDs rather than restating them.
+- **Requirements:** [REQUIREMENTS.md](../../REQUIREMENTS.md) at the repo root lists every file each skill needs, for manual upload to a platform. It must be kept in step with each skill's Load section.
+
 ## How skills use this library
 
 A skill declares the bundles it loads, the rule IDs it relies on or overrides (for example, a permission-promotion threshold that differs from PERM-02), the node and relationship types it interprets, preserves or rejects, and its output schema version. Validation reports three levels:

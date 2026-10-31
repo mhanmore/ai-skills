@@ -6,6 +6,8 @@ status: draft
 
 # Local search
 
+Rules version: 0.1-draft. Record it in the graph manifest (PKG-07).
+
 Typical prompts: "read the /local-search and summarise the planning history", "what does the /local-search say about tree preservation orders?", "build the /local-search package for later".
 
 Every request goes through the same two stages:
@@ -28,6 +30,7 @@ Read these completely before starting. Rule IDs cited below are defined in them.
 1. [core.md](../../resources/planning/core.md)
 2. [local-authority-searches.md](../../resources/planning/local-authority-searches.md)
 3. [permissions.md](../../resources/planning/permissions.md), needed for the planning handoff (HAND, PERM-01/02/05)
+4. [outputs.md](outputs.md), the templates and examples, read at the Emit and Respond steps
 
 ## Contract
 
@@ -119,22 +122,16 @@ Data minimisation: omit applicants' personal names (e.g. "Issued to: …") unles
 
 ### 8. Emit
 
-Write the graph revision (PKG-03), then the exceptions report: under one page, ordered by unreadable or missing material, count mismatches, flags needing review, and unmapped questions. Finish with one line stating the validation level reached. Do not add legal commentary.
+Write the graph revision (PKG-03), then the exceptions report (template T5): under one page, ordered by unreadable or missing material, count mismatches, flags needing review, and unmapped questions. Finish with one line stating the validation level reached. Do not add legal commentary.
 
 ## Respond
 
-Answer only from the graph. Cite page numbers, and keep source wording for references, descriptions and outcomes.
+Answer only from the graph. Use the templates in [outputs.md](outputs.md), and check the reply against its examples before sending. Cite page numbers, and keep source wording for references, descriptions and outcomes.
 
-- **Planning history:** a chronological table with columns reference, procedure (source label), description (search wording), outcome (source label), labelled dates, source (component, question, page) and flags. Merge appearances of the same record (RESP-07) and show every source. Order rows by the earliest labelled date, and say which label was used. Include refusals, withdrawals and pending items. Exclude building control and list it separately if asked.
-- **Summary:** go through each component in order. For each, list the material entries; group negative answers in one line; then add qualifications. Mention every gap and exception.
-- **Specific question:** quote the relevant response or entry. Apply CON29R-03, so a Part 3 answer is always read together with the LLC.
-- **Every reply** ends with:
-  - the search's "as at" date or dates;
-  - the evidence level: search only, or which instruments in the graph have been reviewed;
-  - any stated coverage limits (RESP-04);
-  - the graph path and revision.
-
-  For family structure, suggest `/permission-family`.
+- **Planning history (T1):** merge appearances of the same record (RESP-07) and show every source. Order rows by the earliest labelled date, and say which label was used. Include refusals, withdrawals and pending items. List building control separately, and only on request.
+- **Summary (T2):** go through each component in order. Mention every gap and exception.
+- **Specific question (T3):** quote the relevant response or entry. A Part 3 answer is always read together with the LLC (CON29R-03).
+- **Every reply** ends with the footer (T4). For family structure, suggest `/permission-family`.
 
   Do not state legal conclusions (CORE-04).
 

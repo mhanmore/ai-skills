@@ -1,14 +1,29 @@
 ---
-name: permission-family
-description: Map the family of an English planning permission. Find or confirm the root permission, then link its s73 branches, s96A amendments, reserved-matters approvals, condition decisions and appeals. Sources are the matter graph (for example from /local-search) and any decision notices, appeal letters or other instruments the user supplies. Reading instruments adds operative descriptions, conditions and confirmed links to the graph, and the skill reports which documents would close the remaining gaps. Use whenever a permission family, amendment history or "what has been approved under…" is asked about.
-status: draft
+label: Permission Family
+description: >-
+  Use when the user asks to map, update or check the family of an English
+  planning permission: identifying the root permission and linking section 73
+  permissions, section 96A non-material amendments, reserved matters
+  approvals, approvals of details under conditions and appeals. Trigger on
+  requests such as "map the permission family for 19/01234/OUT", "here are the
+  decision notices, update the family", "which permission does this NMA
+  belong to?" or "what documents are missing from the family?". Works from
+  decision notices, appeal decisions and other planning instruments supplied
+  by the user, and from any local search already read into the matter. Do not
+  activate for reading a local search itself, drafting planning applications,
+  or advising whether a permission is implemented, lawful or extant.
+userFacingDescription: >-
+  Maps a planning permission's family (section 73 branches, non-material
+  amendments, reserved matters and condition approvals) from decision notices
+  and search results, showing evidence levels, flagging ambiguities and
+  listing the documents that would complete the picture.
 ---
 
 # Permission family
 
-Rules version: 0.1-draft. Record it in the graph manifest (PKG-07).
+Status: draft · Rules version: 0.2-draft. Record the rules version in the graph manifest (PKG-07).
 
-Typical prompts: "map the /permission-family for 19/01234/OUT", "here are the decision notices; update the /permission-family", "which /permission-family does 21/00456/NMA belong to?", "what's missing from the /permission-family?".
+Typical prompts: "map the permission family for 19/01234/OUT", "here are the decision notices; update the family", "which family does 21/00456/NMA belong to?", "what's missing from the family?".
 
 Every request goes through the same three stages:
 1. **Enrich the matter graph** from any new instruments.
@@ -22,12 +37,12 @@ Each round of user-supplied documents raises evidence levels: search-reported re
 Read these completely before starting:
 1. [core.md](../../resources/planning/core.md)
 2. [permissions.md](../../resources/planning/permissions.md)
-3. [outputs.md](outputs.md), the templates and examples, read at the Respond step
+3. [outputs.md](references/outputs.md), the templates and examples, read at the Respond step
 
 ## Locate the inputs
 
-1. **Matter** (PKG-01): the one the user names, or the only one in the workspace; otherwise create `matters/default/`.
-2. **New documents:** attachments, named paths and unprocessed files in `matters/<matter_id>/sources/`. Skip any document already in the graph (PKG-07).
+1. **Matter graph** (PKG-01).
+2. **New documents:** attachments, documents named in the prompt, and matter documents not yet in the graph (PKG-07).
 3. **Entry point:** a reference, a document, or a description ("the 2019 outline"). If none is given and the graph holds more than one unrelated permission, list the candidate roots and ask.
 
 ## Contract
@@ -38,7 +53,7 @@ Read these completely before starting:
 | Output | A new graph revision (PKG-03); `family-<root-ref>.json` and `family-<root-ref>.md` beside it (PKG-08); a reply |
 | Node types created or enriched | `permission`, `condition`, `decision`, `application`, `authority`, `document`, `unresolved_reference` |
 | Relationships | `grants`, `determines`, `varies_under_s73`, `amends_under_s96a`, `reserved_matters_under`, `approves_details_under_condition`, `appeal_of`, `corrects`, `relates_to_obligation`, `possibly_related_to` |
-| Not produced | Consolidated condition wording or discharge status (a future `/permission-conditions` skill); conclusions about which permission is operative, implementation or expiry |
+| Not produced | Consolidated condition wording or discharge status (a planned Permission Conditions skill); conclusions about which permission is operative, implementation or expiry |
 
 ## Workflow
 
@@ -46,7 +61,7 @@ Read these completely before starting:
 
 Possible kinds: LPA decision notice, appeal decision letter, reserved-matters notice, condition decision, s96A letter, planning obligation, plans, or context (officer report, application form, portal printout).
 
-Read the text layer with `pdftotext -layout`; render image-only or stamped pages with `pdftoppm -r 120 -png` and read them visually. Decision notices are often scans.
+Read each document with [@ kind="capability" id="document-reading" label="Document reading"]. Decision notices are often scans: read image-only or stamped pages visually.
 
 A single PDF may bundle several instruments, so split them by page range.
 
@@ -114,6 +129,16 @@ Use the templates in [outputs.md](outputs.md), and check the reply against its e
 - **Documents to obtain (T2):** the ranked list from step 6, with the reason for each.
 - **Diagram (T3):** only if asked.
 - **Every reply** ends with the footer (T4). Do not say which permission is operative, current or lapsed.
+
+## When the user asks to test this skill
+
+Run the skill on the supplied documents for real. Keep the task output (Part A) separate from a diagnostic report (Part B). Part B covers:
+- ambiguous, missing or misleading instructions, and the rule IDs involved;
+- instrument wording the link table (FAM-08) did not anticipate;
+- which validation checks were actually performed;
+- which steps were limited by the environment, such as being unable to save or reload the graph.
+
+Propose concrete instruction changes, but do not change the skill unless asked.
 
 ## Flag codes
 

@@ -115,7 +115,7 @@ Building-control records (approvals, completion and competent-person certificate
 
 ## PKG · Matter graph
 
-- **PKG-01** `model` Keep one graph per matter at `matters/<matter_id>/graph.json`, with source files in `matters/<matter_id>/sources/` and skill reports alongside the graph. `matters/` is gitignored. Skills add to the graph; no skill owns it. A matter is scoped to the workspace, and usually there is one per workspace. Use the user's name for it if given; otherwise use `default`. If the workspace holds exactly one matter, use it without asking; ask only when there are several.
+- **PKG-01** `model` Keep one graph per matter, saved as `planning-graph/graph.json` among the matter's documents, with skill reports and derived views in the same folder. Skills add to the graph; no skill owns it. A matter is scoped to the workspace, usually one per workspace. In this development repository a matter is `matters/<matter_id>/` (gitignored), with source files in `sources/`. If the graph cannot be saved, say so, build it within the conversation, and record in the reply that it was not saved.
 - **PKG-02** `model` Envelope. Keys are fixed: use `[]` or a `value_state` rather than omitting a key.
 
 ```json
@@ -138,7 +138,7 @@ Building-control records (approvals, completion and competent-person certificate
 - **PKG-04** `model` Assertions address a `subject_id` plus a node-relative `field_path` (for example `/data/outcome`), never a pointer into the whole package, so they survive revisions. One `source_reported` assertion can cover a whole block (a response, an entry or an instrument section), with its page, locator and a quote of at most 200 characters. Add field-level assertions only for `normalised` and `inferred` values.
 - **PKG-05** `model` Merge on identity. A node from a new source merges into an existing node of the same type with the same authority and reference (PERM-04); otherwise create a new node with a candidate link. A merge adds assertions and never replaces values. The same label with different values becomes `conflicting` (EVID-05); different labels, such as a truncated search description against the operative description, do not conflict.
 - **PKG-06** `model` Promotion. Reviewing an instrument raises the `evidence_level` of the nodes and links it evidences. A reviewed grant of planning permission creates the `permission` node (PERM-02), linked from its decision by `grants`. Earlier search-reported assertions remain.
-- **PKG-07** `model` Documents are deduplicated by `sha256`. A document already in the graph is not re-extracted unless `rules_version` has changed or the user asks.
+- **PKG-07** `model` Identify each document by a `sha256` checksum where one can be computed; otherwise by the platform's document identifier; failing that, by file name plus page count. Record which method was used. A document already in the graph is not re-extracted unless `rules_version` has changed or the user asks.
 - **PKG-08** `model` Derived views (a family tree, a planning-history table, a condition register) are written beside the graph, stamped with the graph revision they were built from. They are never stored as graph facts.
 
 ## CUR · Changes models often miss

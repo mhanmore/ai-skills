@@ -46,7 +46,7 @@ Reading note: [only rule-based context, e.g. CON29R-03; no conclusions]
 ```markdown
 ---
 Search as at: [dates with labels] · Evidence: [search only / instruments reviewed: refs]
-Coverage limits: [stated limits or "none stated"] · Graph: matters/[id]/graph.json r[n]
+Coverage limits: [stated limits or "none stated"] · Graph: [location] r[n]
 ```
 
 ### T5 · Exceptions report

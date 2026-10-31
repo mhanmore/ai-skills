@@ -49,7 +49,7 @@ graph TD
 ```markdown
 ---
 Instruments reviewed: [refs] · Family search: not performed (portal traversal unavailable)
-Evidence cut-off: [date] · Graph: matters/[id]/graph.json r[n]
+Evidence cut-off: [date] · Graph: [location] r[n]
 ```
 
 ## Examples

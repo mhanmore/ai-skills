@@ -1,14 +1,28 @@
 ---
-name: local-search
-description: Read a local authority search for land in England: an LLC1 and CON29 pack, council-issued, from HM Land Registry or a provider's personal search. It builds an evidence-traceable graph package, then answers the user's request from it (a planning history, a summary, a question about an answer or entry, an export). Use whenever a local search or local land charges search is mentioned.
-status: draft
+label: Local Search
+description: >-
+  Use when the user asks to read, summarise, extract from or answer questions
+  about a local authority search for land in England: an LLC1 local land
+  charges result (council-issued or HM Land Registry official search), CON29
+  required or optional enquiries, or a provider's personal or regulated search
+  pack. Trigger on requests such as "summarise the planning history in the
+  local search", "what does the CON29 say about tree preservation orders?",
+  "read the search pack" or "add the search to the matter graph". Do not
+  activate for drainage and water searches (CON29DW), coal mining searches
+  (CON29M), environmental reports or title documents, or for mapping
+  permission families, which the Permission Family skill handles.
+userFacingDescription: >-
+  Reads a local authority search (LLC1 and CON29) into a structured,
+  page-referenced record and answers questions from it, such as planning
+  history or specific enquiries, while flagging gaps, unreadable pages and
+  points requiring human review.
 ---
 
 # Local search
 
-Rules version: 0.1-draft. Record it in the graph manifest (PKG-07).
+Status: draft · Rules version: 0.2-draft. Record the rules version in the graph manifest (PKG-07).
 
-Typical prompts: "read the /local-search and summarise the planning history", "what does the /local-search say about tree preservation orders?", "build the /local-search package for later".
+Typical prompts: "read the local search and summarise the planning history", "what does the search say about tree preservation orders?", "add the search to the matter graph for later".
 
 Every request goes through the same two stages:
 1. **Add the search to the matter graph, or reuse it if already there** (PKG-01). The search contributes every question and answer, every listed record, and provisional planning nodes, each traced to page-level evidence.
@@ -18,10 +32,9 @@ This skill reports what the search says. It does not assess legal effect, implem
 
 ## Locate the input
 
-1. Use files attached to the conversation or paths named in the prompt.
-2. Otherwise, look in `matters/<matter_id>/sources/` and the working directory. If more than one file could be the search, ask which.
-3. Choose the matter (PKG-01): the one the user names, or the only one in the workspace; otherwise create `matters/default/`.
-4. Checksum each file. If the graph already holds those documents (PKG-07), skip to [Respond](#respond).
+1. Use documents attached to the conversation or named in the prompt.
+2. Otherwise, look in the matter's documents. If more than one could be the search, ask which.
+3. Find the matter graph (PKG-01). If it already holds these documents (PKG-07), skip to [Respond](#respond).
 
 ## Load
 
@@ -30,14 +43,14 @@ Read these completely before starting. Rule IDs cited below are defined in them.
 1. [core.md](../../resources/planning/core.md)
 2. [local-authority-searches.md](../../resources/planning/local-authority-searches.md)
 3. [permissions.md](../../resources/planning/permissions.md), needed for the planning handoff (HAND, PERM-01/02/05)
-4. [outputs.md](outputs.md), the templates and examples, read at the Emit and Respond steps
+4. [outputs.md](references/outputs.md), the templates and examples, read at the Emit and Respond steps
 
 ## Contract
 
 | | |
 | --- | --- |
 | Input | One or more PDFs forming one search; optional task context (purpose, property). |
-| Output | A new revision of `matters/<matter_id>/graph.json` (PKG-02, PKG-03), plus `search-<sha8>.exceptions.md` beside it. Then a reply answering the request. |
+| Output | A new revision of the matter graph (PKG-01 to PKG-03), plus a search exceptions report beside it. Then a reply answering the request. |
 | Node types interpreted | `search_report`, `local_land_charge`, `application`, `decision`, `authority`, `document`, `unresolved_reference` |
 | Not emitted | `permission`, `condition` (PERM-02: search evidence is `search_report_only`) |
 | Validation level claimed | `graph-valid` at most, plus `type-valid` once schemas exist |
@@ -46,8 +59,8 @@ Read these completely before starting. Rule IDs cited below are defined in them.
 
 ### 1. Inventory and split components
 
-- Run `pdfinfo` for page counts and checksum each file (`shasum -a 256`).
-- Get the text layer with `pdftotext -layout`. Any page with little or no text is image-only (HM Land Registry results often are): render it with `pdftoppm -r 120 -png` and read it visually.
+- Record each document's identity and page count (PKG-07).
+- Read each document with [@ kind="capability" id="document-reading" label="Document reading"], keeping the page layout. Any page with little or no text is image-only (HM Land Registry results often are), so read the page image visually. Also read tables, ticks and continuation pages visually wherever the text loses the layout.
 - Assign every page to a component (SRCH-02). Recognise components by title and issuer:
   - `llc1_council`: "Register of Local Land Charges", schedules by Part.
   - `llc1_hmlr`: "Local Land Charges official search" under HM Land Registry branding.
@@ -126,12 +139,22 @@ Write the graph revision (PKG-03), then the exceptions report (template T5): und
 
 ## Respond
 
-Answer only from the graph. Use the templates in [outputs.md](outputs.md), and check the reply against its examples before sending. Cite page numbers, and keep source wording for references, descriptions and outcomes.
+Answer only from the graph. Use the templates in [outputs.md](references/outputs.md), and check the reply against its examples before sending. Cite page numbers, and keep source wording for references, descriptions and outcomes.
 
 - **Planning history (T1):** merge appearances of the same record (RESP-07) and show every source. Order rows by the earliest labelled date, and say which label was used. Include refusals, withdrawals and pending items. List building control separately, and only on request.
 - **Summary (T2):** go through each component in order. Mention every gap and exception.
 - **Specific question (T3):** quote the relevant response or entry. A Part 3 answer is always read together with the LLC (CON29R-03).
-- **Every reply** ends with the footer (T4). For family structure, suggest `/permission-family`.
+- **Every reply** ends with the footer (T4). For family structure, suggest the Permission Family skill.
+
+## When the user asks to test this skill
+
+Run the skill on the supplied search for real. Keep the task output (Part A) separate from a diagnostic report (Part B). Part B covers:
+- ambiguous, missing or misleading instructions, and the rule IDs involved;
+- layouts the workflow did not anticipate;
+- which validation checks were actually performed;
+- which steps were limited by the environment, such as being unable to save the graph or read page images.
+
+Propose concrete instruction changes, but do not change the skill unless asked.
 
   Do not state legal conclusions (CORE-04).
 

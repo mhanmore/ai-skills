@@ -1,6 +1,6 @@
 # Planning resources and skills — schema brainstorm
 
-Status: initial design discussion, not an implemented schema or operational skill.  
+Status: initial design discussion with two draft domain resources; not an implemented schema or operational skill.
 Started: 31 October 2026.  
 Initial scope: England; jurisdiction must be explicit so other regimes can be added without silently importing English assumptions.
 
@@ -10,23 +10,32 @@ Build a reusable library of planning concepts, data contracts and extraction rul
 
 First use case: ingest a local authority search PDF into evidence-traceable JSON; reuse its planning history in permission-family research, condition consolidation and due diligence.
 
-Keep three distinct layers:
+Use an **open-world domain graph with closed-world contracts**. The resource library may grow through new concepts, entity types and relationships without requiring one central ontology to anticipate the whole domain. Skills, however, must exchange data through predictable, versioned and validated interfaces.
 
-1. **Domain resources:** what the objects mean, their fields, relationships and evidential limits.
-2. **Data contracts:** versioned JSON Schemas, controlled vocabularies, examples and validation rules.
-3. **Skills:** how to obtain, read, reconcile and validate evidence using those contracts.
+Keep four distinct layers:
+
+1. **Open domain graph:** independently maintainable concepts, legal authorities, jurisdictional rules, mappings, examples and typed links between them.
+2. **Core graph protocol:** stable envelopes for nodes, relationships, documents, assertions, versions, evidence scope and review state.
+3. **Type and skill contracts:** versioned JSON Schemas, controlled vocabularies, examples, validation rules and declared skill input/output requirements.
+4. **Skills:** how to obtain, traverse, read, reconcile and validate evidence using those resources and contracts.
+
+The graph is open in what it can represent, but closed at execution boundaries. An unfamiliar node or relationship type may be preserved without interpretation; it must not be silently coerced into a known type. A skill must declare which schema versions and graph elements it understands, what evidence it requires and the exact contract it emits.
 
 A search is a dated report about records. It is not itself a complete permission file or proof of the current legal position.
 
 ## 2. Proposed repository layout
 
-Illustrative future layout; this planning file is the only new deliverable at this stage.
+Illustrative future layout. The permission and local-authority-search resources now exist as first drafts; the remaining structure is not yet implemented.
 
+- `resources/planning/` — an open graph of Markdown resource nodes with stable IDs, typed frontmatter and explicit links; larger overview resources may remain where they aid human navigation.
 - `resources/planning/permissions.md` — permission and related-decision concepts.
 - `resources/planning/conditions.md` — condition identity, versions, triggers and coverage.
 - `resources/planning/local-authority-searches.md` — search scope, question mapping and interpretation.
 - `resources/planning/evidence.md` — source pointers, assertions, uncertainty and review.
+- `registries/planning/` — versioned registries for known node types, relationship types, vocabularies and jurisdiction-specific mappings; registries are extensible rather than an assertion that the domain is complete.
+- `schemas/planning/core/` — graph-node, relationship, document, assertion, version and review envelopes.
 - `schemas/planning/v0.1/` — domain objects and search-package JSON Schemas.
+- `contracts/planning/skills/` — per-skill accepted schema versions, required evidence and exact input/output contracts.
 - `examples/planning/` — synthetic examples and expected outputs.
 - `tests/planning/` — validation and extraction fixtures.
 - A later search-ingestion skill referencing those resources.
@@ -35,6 +44,29 @@ Illustrative future layout; this planning file is the only new deliverable at th
 Do not put real client search reports, addresses or extracted matter JSON into this public repository. Use synthetic or suitably redacted fixtures.
 
 ## 3. Core modelling decisions
+
+### Open graph, closed interfaces
+
+Treat the proposed entities as the first supported node types, not as the permanent outer boundary of the planning domain. Later resources may introduce types such as enforcement notices, listed-building consents or jurisdiction-specific instruments without redesigning the core graph protocol.
+
+Resource nodes should be independently maintainable and linkable, in the style of an open knowledge graph. Each should have a stable ID and sufficient metadata to establish its type, jurisdiction, status, sources, review date and typed relationships. Prose can carry nuance; frontmatter and registries carry machine-readable identity and semantics.
+
+Operational data uses a stable envelope even when its type is extensible. At minimum:
+
+- A node has a stable `node_id`, `node_type`, `schema_ref`, jurisdiction where applicable, typed data and assertion links.
+- A relationship has its own ID, registered or explicitly unrecognised type, source, target, type-specific attributes, evidence and review state.
+- A document, assertion and assessment uses the shared evidence/version protocol below.
+- Unknown extensions are preserved and reported. They do not validate as known types and do not acquire legal meaning merely because an AI can infer a plausible interpretation.
+
+Closed contracts apply whenever a skill consumes or emits a package. Each skill declares:
+
+- supported core, node-type and vocabulary versions;
+- node and relationship types it interprets, preserves without interpretation or rejects;
+- required fields, evidence thresholds and permitted unresolved states;
+- graph traversal and coverage expectations;
+- exact output schema and validation level achieved.
+
+This allows exploratory research and intermediate extraction to remain incomplete and extensible while making inter-skill handoffs reproducible and auditable.
 
 ### Separate application, decision and permission
 
@@ -233,61 +265,78 @@ Synthetic, deliberately incomplete example. This is valid JSON but is not yet a 
       "page_count": 12
     }
   ],
-  "search_reports": [
+  "nodes": [
     {
-      "search_id": "search-1",
-      "document_ids": ["doc-search"],
-      "report_type": "unknown",
-      "as_of_date": null,
-      "responses": [
-        {
-          "response_id": "response-1",
-          "source_question_code": "EXAMPLE-PLANNING",
-          "answer_text": "Planning history: EX/2024/001 — permission granted.",
-          "answer_classification": "entries_listed",
-          "entry_ids": ["entry-1"]
-        }
-      ],
-      "entries": [
-        {
-          "entry_id": "entry-1",
-          "entry_type": "planning_history",
-          "source_response_ids": ["response-1"],
-          "entity_ids": ["application-1"]
-        }
-      ]
+      "node_id": "search-1",
+      "node_type": "search_report",
+      "schema_ref": "planning/search-report/0.1-draft",
+      "jurisdiction": "England",
+      "data": {
+        "document_ids": ["doc-search"],
+        "report_type": "unknown",
+        "as_of_date": null,
+        "responses": [
+          {
+            "response_id": "response-1",
+            "source_question_code": "EXAMPLE-PLANNING",
+            "answer_text": "Planning history: EX/2024/001 — permission granted.",
+            "answer_classification": "entries_listed",
+            "entry_ids": ["entry-1"]
+          }
+        ],
+        "entries": [
+          {
+            "entry_id": "entry-1",
+            "entry_type": "planning_history",
+            "source_response_ids": ["response-1"],
+            "entity_ids": ["application-1"]
+          }
+        ]
+      },
+      "assertion_ids": []
+    },
+    {
+      "node_id": "application-1",
+      "node_type": "application",
+      "schema_ref": "planning/application/0.1-draft",
+      "jurisdiction": "England",
+      "data": {
+        "authority_id": "authority-example",
+        "reference": "EX/2024/001",
+        "procedure": "unknown"
+      },
+      "assertion_ids": []
+    },
+    {
+      "node_id": "authority-example",
+      "node_type": "authority",
+      "schema_ref": "planning/authority/0.1-draft",
+      "jurisdiction": "England",
+      "data": {
+        "name": "Example Council"
+      },
+      "assertion_ids": []
+    },
+    {
+      "node_id": "decision-1",
+      "node_type": "decision",
+      "schema_ref": "planning/decision/0.1-draft",
+      "jurisdiction": "England",
+      "data": {
+        "application_id": "application-1",
+        "outcome": "granted",
+        "decision_date": null,
+        "evidence_level": "search_report_only"
+      },
+      "assertion_ids": ["assertion-1"]
     }
   ],
-  "applications": [
-    {
-      "application_id": "application-1",
-      "authority_id": "authority-example",
-      "reference": "EX/2024/001",
-      "procedure": "unknown"
-    }
-  ],
-  "authorities": [
-    {
-      "authority_id": "authority-example",
-      "name": "Example Council"
-    }
-  ],
-  "decisions": [
-    {
-      "decision_id": "decision-1",
-      "application_id": "application-1",
-      "outcome": "granted",
-      "decision_date": null,
-      "evidence_level": "search_report_only"
-    }
-  ],
-  "permissions": [],
   "relationships": [],
   "assertions": [
     {
       "assertion_id": "assertion-1",
       "subject_id": "decision-1",
-      "field_path": "/decisions/0/outcome",
+      "field_path": "/nodes/3/data/outcome",
       "value": "granted",
       "assertion_kind": "normalised",
       "normalisation_rule": "Map explicit source phrase permission granted to granted.",
@@ -311,13 +360,13 @@ Synthetic, deliberately incomplete example. This is valid JSON but is not yet a 
   "unresolved_gaps": [
     {
       "subject_id": "search-1",
-      "field_path": "/search_reports/0/as_of_date",
+      "field_path": "/nodes/0/data/as_of_date",
       "value_state": "not_stated",
       "message": "Effective date not established in this illustrative extract."
     },
     {
       "subject_id": "decision-1",
-      "field_path": "/decisions/0/decision_date",
+      "field_path": "/nodes/3/data/decision_date",
       "value_state": "not_stated",
       "message": "Decision notice and decision date not available."
     }
@@ -342,6 +391,14 @@ Structural checks:
 - Graph checks distinguish prohibited self-links from legitimate cross-links; do not demand a single-parent tree.
 - Extracted text is retained alongside normalised fields.
 - Schema version, extraction revision, tool versions and evidence cutoff are recorded.
+
+Validation should report three distinct levels rather than a single pass/fail result:
+
+1. **Graph-valid:** core envelopes, IDs, links, versions and provenance are structurally sound; unrecognised extensions are preserved and identified.
+2. **Type-valid:** each recognised node and relationship conforms to its declared type schema and registered vocabulary version.
+3. **Skill-ready:** the graph meets a named skill's required evidence, coverage, review and input-contract rules.
+
+A package may be graph-valid while incomplete or not ready for a particular skill. Validation must never turn open-world absence into a closed-world conclusion such as “no relevant records exist.” Published assessments and inter-skill handoffs must state the highest validation level achieved and the applicable skill contract, if any.
 
 Fixture shortlist:
 
@@ -369,9 +426,11 @@ Start with synthetic fixtures; later test privately against representative real 
 8. **Review policy:** which fields require visual verification before marking an extraction reviewed?
 9. **Versioning:** separate domain schema version, extraction run revision and later enrichment history.
 10. **Legal resources:** establish authoritative sources for procedure/effect rules before making the resource operational; record jurisdiction, source date and review date.
+11. **Extension governance:** define how a provisional node, relationship or vocabulary term becomes registered, and how aliases or deprecated terms remain readable.
+12. **Skill compatibility:** decide whether compatibility is declared by exact schema versions, version ranges or tested conformance profiles.
 
 ## 13. Suggested first increment
 
-Agree a minimal shared contract for Document, Assertion, Authority, Site, Application, Decision, Permission, Condition and Relationship. Write the permission resource first, then the search resource that consumes it. Add one synthetic search package and its JSON Schema. Only then draft the ingestion skill and connect the existing condition-consolidation skill through an explicit adapter.
+Agree the minimal core graph protocol for node identity, Relationship, Document, Assertion, versioning and review state. Register Authority, Site, Application, Decision, Permission and Condition as the first supported node types, without treating that list as closed. Write the permission resource first, then the search resource that consumes it. Add one synthetic search package, its type schemas and a named skill-readiness profile. Only then draft the ingestion skill and connect the existing condition-consolidation skill through an explicit adapter.
 
-Keep extraction, entity resolution and substantive assessment independently reviewable. That is what makes one JSON package reusable across several planning skills.
+Keep extraction, entity resolution and substantive assessment independently reviewable. Permit the graph to grow through explicit extensions, but require validated contracts at every skill boundary. That combination is what makes one JSON package both reusable across several planning skills and safe to interpret consistently.

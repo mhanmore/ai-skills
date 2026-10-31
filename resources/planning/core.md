@@ -3,7 +3,7 @@ id: planning.core
 kind: resource_bundle
 jurisdiction: England
 status: draft
-nodes: [CORE, VOCAB, REL, EVID, CUR]
+nodes: [CORE, VOCAB, REL, EVID, PKG, CUR]
 ---
 
 # Planning core
@@ -71,6 +71,13 @@ The list is open: preserve an unfamiliar type without interpreting it; never coe
 | TPO, TCA, TWA, "works to trees" | `tree_works` |
 | PIP / TDC | `permission_in_principle` / `technical_details_consent` |
 
+| Outcome label (examples) | `outcome` |
+| --- | --- |
+| "Approved", "Permitted", "Granted", "Conditional planning permission/consent", "Consent given" | `granted` |
+| "Refused", "Rejected" | `refused` |
+| "Prior approval not required" | `not_required` |
+| "Part approved/part refused", "split decision" | `split` |
+
 Building-control records (approvals, completion and competent-person certificates) belong to a separate regime: keep them as source entries, not planning applications.
 
 ## REL · Relationships
@@ -93,6 +100,7 @@ Building-control records (approvals, completion and competent-person certificate
 - **REL-02** `model` Actively generate `possibly_related_to` candidates from reference patterns (`/RM`, `/NMA`, `/DIS`, a shared stem), a shared address or the chronology. Mark each `assertion_kind: inferred` with its basis. Never promote a candidate without document evidence.
 - **REL-03** `model` A cited record that is missing becomes an `unresolved_reference`, never a guessed parent.
 - **REL-04** `model` The family is a graph, not a tree. Multiple parents, branches and overlapping families are normal; keep them all.
+- **REL-05** `model` A typed link stated by any source counts as stated: for example, a search description "Variation of condition 2 of 19/01234/FUL" or a decision notice "pursuant to condition 5 of …". Record the typed relationship with an `evidence_level` attribute taken from its source. A link stated only by a search stays `search_report_only` until an instrument confirms it.
 
 ## EVID · Evidence and uncertainty
 
@@ -101,9 +109,37 @@ Building-control records (approvals, completion and competent-person certificate
 - **EVID-03** `model` `value_state`: `present`, `not_stated`, `illegible`, `not_applicable`, `conflicting`. Every null carries a `value_state`.
 - **EVID-04** `model` `evidence_level` on applications, decisions and permissions: `search_report_only`, `portal_record` or `instrument_reviewed`.
 - **EVID-05** `model` Conflicting assertions coexist until a reviewed resolution. Never prefer the newest-looking source.
-- **EVID-06** `model` Record each date with its source label. Use ISO 8601 only for a date stated in full, and keep the original text and precision. Never invent a day, and never derive one date from another (for example, an issue date from a decision or validation date).
+- **EVID-06** `model` Record each date with its source label. Use ISO 8601 only for a date stated in full, and keep the original text and precision. Never invent a day, and never derive one date from another (for example, an issue date from a decision or validation date). Numeric source dates are UK day-first (`06/07/2012` is 6 July 2012). Differently labelled dates for the same record (for example an LLC registration date and a CON29 "date decision issued") are not a conflict; keep both.
 - **EVID-07** `model` No numeric confidence scores. OCR confidence is technical metadata only.
 - **EVID-08** `model` A failed or incomplete extraction never produces a clean negative; record the gap.
+
+## PKG · Matter graph
+
+- **PKG-01** `model` Keep one graph per matter at `matters/<matter_id>/graph.json`, with source files in `matters/<matter_id>/sources/` and skill reports alongside the graph. `matters/` is gitignored. Skills add to the graph; no skill owns it. A matter is scoped to the workspace, and usually there is one per workspace. Use the user's name for it if given; otherwise use `default`. If the workspace holds exactly one matter, use it without asking; ask only when there are several.
+- **PKG-02** `model` Envelope. Keys are fixed: use `[]` or a `value_state` rather than omitting a key.
+
+```json
+{
+  "schema_version": "planning.matter-graph/0.1-draft",
+  "matter_id": "", "jurisdiction": "England", "revision": 0,
+  "history": [{"revision": 0, "utc": "", "skill": "", "documents_added": [], "summary": ""}],
+  "documents": [{"document_id": "", "file_name": "", "sha256": "", "page_count": 0, "document_kind": ""}],
+  "nodes": [{"node_id": "", "node_type": "", "schema_ref": "", "jurisdiction": "", "data": {}, "assertion_ids": []}],
+  "relationships": [{"relationship_id": "", "type": "", "source_id": "", "target_id": "", "attributes": {"evidence_level": ""}, "assertion_ids": []}],
+  "assertions": [],
+  "gaps": [{"subject_id": "", "field_path": "", "value_state": "", "message": ""}],
+  "flags": [{"code": "", "subject_ids": [], "rule": "", "message": ""}],
+  "manifest": {"pages": [{"document_id": "", "page": 0, "component_id": "", "method": "text|visual|ocr"}],
+               "counts": {}, "tools": [], "rules_version": "", "validation_level": ""}
+}
+```
+
+- **PKG-03** `model` Append only. Before each write, copy the current graph to `graph.r<revision>.json`, increment `revision` and append a `history` entry. Never edit or delete an assertion. A correction is a new assertion that names the one it supersedes (`supersedes_assertion_id`).
+- **PKG-04** `model` Assertions address a `subject_id` plus a node-relative `field_path` (for example `/data/outcome`), never a pointer into the whole package, so they survive revisions. One `source_reported` assertion can cover a whole block (a response, an entry or an instrument section), with its page, locator and a quote of at most 200 characters. Add field-level assertions only for `normalised` and `inferred` values.
+- **PKG-05** `model` Merge on identity. A node from a new source merges into an existing node of the same type with the same authority and reference (PERM-04); otherwise create a new node with a candidate link. A merge adds assertions and never replaces values. The same label with different values becomes `conflicting` (EVID-05); different labels, such as a truncated search description against the operative description, do not conflict.
+- **PKG-06** `model` Promotion. Reviewing an instrument raises the `evidence_level` of the nodes and links it evidences. A reviewed grant of planning permission creates the `permission` node (PERM-02), linked from its decision by `grants`. Earlier search-reported assertions remain.
+- **PKG-07** `model` Documents are deduplicated by `sha256`. A document already in the graph is not re-extracted unless `rules_version` has changed or the user asks.
+- **PKG-08** `model` Derived views (a family tree, a planning-history table, a condition register) are written beside the graph, stamped with the graph revision they were built from. They are never stored as graph facts.
 
 ## CUR · Changes models often miss
 

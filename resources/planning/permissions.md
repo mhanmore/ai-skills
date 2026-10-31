@@ -30,6 +30,17 @@ The aim is useful extraction, not legal determination. Where a document departs 
 - **READ-02** `law` A permission is read as a public document. Its meaning comes from the notice, its conditions and reasons, and the documents it incorporates (*Trump International v Scottish Ministers* [2015] UKSC 74; *Lambeth LBC v SSCLG* [2019] UKSC 33). Flag any reliance on application material that is not incorporated.
 - **READ-03** `practice` Hybrid permissions: record each component's full or outline treatment and its reserved matters, using the notice's labels.
 - **READ-04** `practice` Some conditions apply without being printed (CUR-02). An unprinted condition is not evidence that the condition is absent.
+- **READ-05** `practice` What each instrument type adds beyond a search entry:
+
+| Instrument | Look for |
+| --- | --- |
+| LPA decision notice | Header (reference, applicant, site address, received/valid dates); operative description; decision wording; conditions with reasons; approved plans list (often in a "plans" condition); informatives (s106, CIL, BNG); signature or issue date |
+| Appeal decision letter | Appeal (APP/…) and LPA references; Inspector or Secretary of State; letter date; the "Decision" paragraph ("allowed and planning permission is granted for … subject to the conditions in the attached schedule"); the conditions schedule at the end; any costs decision, recorded separately |
+| Reserved-matters notice | Matters approved, phase or component, approved plans, any further conditions, the outline reference |
+| Condition decision (often a letter) | Condition number(s) and parent reference; submitted documents; decision wording ("approved", "discharged in part", "the details are acceptable"); what remains outstanding; continuing duties |
+| s96A letter or notice | Target reference; the exact change; replacement plans; amended or new conditions; "read in conjunction with" wording |
+
+- **READ-06** `practice` Officer and committee reports, application forms and portal pages are context, not instruments. Use them to find candidates and references, never as a source of operative content (READ-02).
 
 ## S73 · Section 73 and section 73A
 
@@ -59,6 +70,7 @@ The aim is useful extraction, not legal determination. Where a document departs 
 - **COND-03** `model` Keep four questions separate: discharge as reported by a source; the formal decision; documentary coverage; physical compliance.
 - **COND-04** `practice` Record each condition's trigger as worded: before commencement, before occupation, compliance or retention, or phase-specific. Flag any pre-commencement condition with no evidenced approval, without concluding on implementation.
 - **COND-05** `model` Never propagate an approval to a parallel permission or a similarly numbered condition without evidence.
+- **COND-06** `model` Create `condition` nodes only from a reviewed instrument. Record the number as printed (keep any numbering defects), the group heading, the verbatim text and reason, and the trigger wording (COND-04). A citation of a condition whose owning instrument has not been reviewed becomes an `unresolved_reference` naming the permission and the number.
 
 ## ROUTE · Other authorisation routes
 
@@ -74,6 +86,26 @@ These are recorded when encountered, not sought (CORE-03).
 - **FAM-03** `model` Match references within an authority. An address match alone gives only a candidate.
 - **FAM-04** `law` → flag. Overlapping permissions on the same land can be mutually incompatible (*Hillside Parks v Snowdonia NPA* [2022] UKSC 30). Keep all of them and flag the overlap. Never discard a permission or mark it lapsed or superseded on that basis.
 - **FAM-05** `model` A "current consolidated permission" is a dated, derived assessment over a declared path and a declared evidence set.
+- **FAM-06** `model` Branch model:
+  - The family is the root permission and everything descending from it.
+  - Each `s73` permission is a **branch head**: a fresh permission on its own terms (S73-01), with its own conditions and its own children.
+  - An `s96a` decision **modifies** its target and stays on that branch (S96A-01).
+  - Reserved-matters and condition decisions attach to the permission they are stated to be made under.
+  - An s73 of an s73 branches from its stated parent, not from the root.
+- **FAM-07** `model` Finding the root. From any entry point, walk stated parent links upward until reaching a permission with no stated s73 parent; that is the root. Record the entry point. If the walk ends at an unresolved reference, the root is provisional.
+- **FAM-08** `practice` Parent links are usually stated in the description or the decision wording:
+
+| Wording (examples) | Relationship | Child `procedure` |
+| --- | --- | --- |
+| "Variation/removal of condition(s) N of (planning permission) REF", "Section 73 application…", "Minor material amendment to REF" | `varies_under_s73` | `s73` |
+| "Non-material amendment to REF", "NMA to REF" | `amends_under_s96a` | `s96a` |
+| "Approval of reserved matters (access, …) pursuant to/following outline (permission) REF" | `reserved_matters_under` | `reserved_matters` |
+| "Approval/discharge of details reserved by/pursuant to/required by condition(s) N of REF" | `approves_details_under_condition` | `condition_approval` |
+| "Appeal against refusal of REF"; appeal letter quoting the LPA reference | `appeal_of` | — |
+| "… without complying with condition N of REF" (retrospective) | `varies_under_s73` | `s73a` |
+
+- **FAM-09** `practice` After an s73 grant, later applications sometimes still cite the earlier reference. Record the target as stated. Where both branches are live, flag `branch_target_ambiguous`, and never copy the decision across (COND-05).
+- **FAM-10** `model` Within a branch, order children by labelled decision date, and say which label was used. Apply s96A changes in that order (S96A-03).
 
 ## Sources
 

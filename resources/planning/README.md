@@ -2,7 +2,15 @@
 
 Design notes for the planning knowledge base. This file is for maintainers; skills should not load it.
 
-Earlier ad-hoc skills in this repository (for example `planning-permission-condition-consolidation/`) pre-date this library. They keep their own contracts until an adapter is agreed.
+Earlier ad-hoc skills are in `archive/`. They pre-date this library and keep their own contracts until an adapter is agreed. New skills live in `skills/`:
+
+| Skill | Role |
+| --- | --- |
+| `/local-search` | Adds a search to the matter graph; answers questions about the search |
+| `/permission-family` | Reviews instruments, links families and branches, lists the documents to obtain |
+| `/permission-conditions` (planned) | Derives a condition register from the family graph. The archived consolidation spec (taxonomy, documentary coverage assessment) is its starting point. |
+
+Skills share one matter graph per matter (PKG). Each skill adds to it, so evidence builds up across rounds as the user supplies better documents.
 
 ## Purpose
 
@@ -26,7 +34,7 @@ A shared knowledge base that lets several assistive planning skills read documen
 | `local-authority-searches.md` | Search tasks | Components, response and entry model, LLC, CON29R and CON29O codes, handoff |
 | `README.md` | No | This file |
 
-Future work: `schemas/planning/` (JSON Schemas, which will become the source of truth for fields), `contracts/planning/skills/`, `examples/planning/` and `tests/planning/`.
+Future work: `schemas/planning/` (JSON Schemas, which will become the source of truth for fields), `examples/planning/` and `tests/planning/`. For now, each skill's contract sits in its own SKILL.md.
 
 ## Conventions
 
@@ -36,6 +44,16 @@ Future work: `schemas/planning/` (JSON Schemas, which will become the source of 
 - **Single vocabulary.** All enums and relationship types live in `core.md`. Topic bundles refer to them and never redefine them.
 - **Field definitions.** Topic bundles describe only fields with non-obvious meaning. Complete field lists belong in the schemas.
 - **No client data.** Use synthetic or redacted fixtures only.
+
+## Skill naming and filing
+
+Skills are invoked as `/name` inside plain-English prompts ("read the /local-search and summarise the planning history"). The convention follows from that:
+
+- **Name the document or object, not the operation.** The verb comes from the prompt. Examples: `/local-search`, and later perhaps `/decision-notice`, `/planning-obligation` or `/permission-family`. Avoid names like `search-graph`, `ingest-search` or `summarise-history`.
+- **Lowercase kebab-case, two or three words.** It must read naturally after "the" in a sentence, and must not collide with harness built-ins or generic words such as `/search` or `/review`.
+- **One skill per document type.** It covers every request about that document: build or reuse the graph package, then respond. Different outputs are sections within the skill, not separate skills.
+- **Layout:** `skills/<name>/SKILL.md`, where the directory name equals the frontmatter `name`. A skill loads at most three resource bundles (the four-file cap).
+- **The matter graph is the handoff between skills** (PKG-01). A later skill reads and enriches `matters/<matter_id>/graph.json` rather than re-reading PDFs. Derived views sit beside it (PKG-08).
 
 ## How skills use this library
 
@@ -63,6 +81,10 @@ A skill declares the bundles it loads, the rule IDs it relies on or overrides (f
 5. Versioning: schema version, extraction revision and enrichment history.
 6. Compatibility: an adapter for the existing condition-consolidation skill, including its `discharge_status` vocabulary.
 7. Extension governance: how a provisional type or term becomes registered.
+
+## Future features
+
+- **Portal traversal** for family completeness (finding missing reserved-matters approvals, condition decisions and s96A amendments on LPA planning portals). This is blocked until the harness provides richer web interaction; better tooling for `*.gov.uk` has been requested from the provider. When it arrives, `/permission-family` step 6 becomes an optional search step, and portal results enter as context sources (READ-06) until instruments are reviewed.
 
 ## Ingestion workflow (brief for the future search-ingestion skill)
 

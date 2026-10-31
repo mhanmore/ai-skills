@@ -1,0 +1,27 @@
+# OS and editor
+.DS_Store
+.vscode/
+.idea/
+
+# Claude Code local state (permissions accumulate machine-specific paths)
+.claude/
+
+# Working files
+*.temp.md
+*.tmp
+*.bak
+scratch/
+work/
+out/
+
+# Matter data: never commit real searches, instruments or extracted packages.
+# Synthetic or redacted fixtures belong under examples/ or tests/.
+matters/
+*.pdf
+!examples/**/*.pdf
+!tests/**/*.pdf
+
+# Tooling
+__pycache__/
+.venv/
+node_modules/

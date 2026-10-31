@@ -21,7 +21,7 @@ userFacingDescription: >-
 
 # Permission family
 
-Status: draft · Rules version: 0.2-draft. Record the rules version in the graph manifest (PKG-07).
+Status: draft · Rules version: 0.3-draft. Record the rules version in the graph manifest (PKG-07).
 
 Typical prompts: "map the permission family for 19/01234/OUT", "here are the decision notices; update the family", "which family does 21/00456/NMA belong to?", "what's missing from the family?".
 

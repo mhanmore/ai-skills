@@ -124,11 +124,15 @@ This is the working baseline; verify it against the form in hand.
 
 For each planning entry, apply the following rules.
 
-- Create an application, and a decision where an outcome is stated (PERM-01). Classify with the alias table (VOCAB-05).
-- Create no permission at `search_report_only` (PERM-02).
-- Keep the search description as a `description_source` entry (PERM-05).
-- Generate candidate family links (REL-02) and turn cited parents into unresolved references (REL-03).
-- Carry the search's "as at" date and the response scope onto every entity derived from the search.
+- **HAND-01** `model` Create an application, and a decision where an outcome is stated (PERM-01). Classify with the alias table (VOCAB-05). Create no permission or condition at `search_report_only` (PERM-02). Keep the search description as a `description_source` entry (PERM-05). Derived nodes cite the search response or entry as their evidence (PKG-04) rather than restating it.
+- **HAND-02** `model` A link the search states (REL-05) is recorded with its cited wording verbatim and `evidence_level: search_report_only`. Because no permission or condition node exists yet:
+  - a link stated against a permission targets the cited record's `application` node where it is in the graph, otherwise an `unresolved_reference` (REL-03);
+  - a link stated against a condition targets an `unresolved_reference` for the permission and condition number, with `candidate_parent_node_id` where the cited application is in the graph;
+  - the source is the decision where an outcome is stated, otherwise the application. A link from a pending, withdrawn or undecided application has `attributes.proposed: true`.
+
+  PKG-06 re-targets these links once the instruments are reviewed.
+- **HAND-03** `model` During search ingestion, generate a `possibly_related_to` candidate (REL-02) only from a reference pattern or from wording that suggests a procedural connection. A shared address, inclusion in the same search or the chronology alone is left to family mapping.
+- **HAND-04** `model` Carry the search's "as at" date and the response scope onto every entity derived from the search.
 
 ## Sources
 

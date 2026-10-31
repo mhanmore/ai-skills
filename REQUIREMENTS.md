@@ -2,7 +2,7 @@
 
 The files each skill needs, for anyone uploading skills to a platform. In this repository skills link to shared resources so there is one source of truth. Platforms expect each skill to carry its own files, so on upload every listed file is copied into that skill.
 
-Rules version: **0.2-draft** (2026-10-31)
+Rules version: **0.3-draft** (2026-10-31)
 
 ## Legora format
 
@@ -43,8 +43,10 @@ Builds are committed to `builds/` as `<skill-folder>-v<rules version>.zip`. Neve
 | --- | --- | --- | --- |
 | `builds/local-search-v0.1-draft.zip` | 0.1-draft | 2026-10-31 | Superseded: Legora rejected its frontmatter |
 | `builds/permission-family-v0.1-draft.zip` | 0.1-draft | 2026-10-31 | Superseded: Legora rejected its frontmatter |
-| `builds/local-search-v0.2-draft.zip` | 0.2-draft | 2026-10-31 | Current |
-| `builds/permission-family-v0.2-draft.zip` | 0.2-draft | 2026-10-31 | Current |
+| `builds/local-search-v0.2-draft.zip` | 0.2-draft | 2026-10-31 | Superseded: efficiency refinements in 0.3 |
+| `builds/permission-family-v0.2-draft.zip` | 0.2-draft | 2026-10-31 | Superseded: core.md changed in 0.3 |
+| `builds/local-search-v0.3-draft.zip` | 0.3-draft | 2026-10-31 | Current |
+| `builds/permission-family-v0.3-draft.zip` | 0.3-draft | 2026-10-31 | Current |
 
 ## Local Search (`skills/local-search/`)
 
@@ -53,7 +55,7 @@ Reads a local authority search into the matter graph and answers questions about
 | Path in skill | Source in repo | Loaded | Rules relied on |
 | --- | --- | --- | --- |
 | `SKILL.md` | `skills/local-search/SKILL.md` | Always | |
-| `references/outputs.md` | `skills/local-search/references/outputs.md` | At the Emit and Respond steps | Templates T1–T5, examples E1–E8 |
+| `references/outputs.md` | `skills/local-search/references/outputs.md` | At the Emit and Respond steps | Templates T1–T6, examples E1–E10 |
 | `references/core.md` | `resources/planning/core.md` | Always | CORE, VOCAB, REL, EVID, PKG, CUR |
 | `references/local-authority-searches.md` | `resources/planning/local-authority-searches.md` | Always | SRCH, RESP, LLC, CON29R, CON29O, HAND |
 | `references/permissions.md` | `resources/planning/permissions.md` | Always (planning handoff) | PERM-01/02/05/06, FAM-08 |

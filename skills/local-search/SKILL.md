@@ -2,7 +2,7 @@
 label: Local Search
 description: >-
   Use when the user asks to read, summarise, extract from or answer questions
-  about a local authority search for land in England: an LLC1 local land
+  about a local authority search for land in England or Wales: an LLC1 local land
   charges result (council-issued or HM Land Registry official search), CON29
   required or optional enquiries, or a provider's personal or regulated search
   pack. Trigger on requests such as "summarise the planning history in the
@@ -20,7 +20,7 @@ userFacingDescription: >-
 
 # Local search
 
-Status: draft · Rules version: 0.2-draft. Record the rules version in the graph manifest (PKG-07).
+Status: draft · Rules version: 0.3-draft. Record the rules version in the graph manifest (PKG-07).
 
 Typical prompts: "read the local search and summarise the planning history", "what does the search say about tree preservation orders?", "add the search to the matter graph for later".
 
@@ -60,7 +60,14 @@ Read these completely before starting. Rule IDs cited below are defined in them.
 ### 1. Inventory and split components
 
 - Record each document's identity and page count (PKG-07).
-- Read each document with [@ kind="capability" id="document-reading" label="Document reading"], keeping the page layout. Any page with little or no text is image-only (HM Land Registry results often are), so read the page image visually. Also read tables, ticks and continuation pages visually wherever the text loses the layout.
+- Read each document with [@ kind="capability" id="document-reading" label="Document reading"], keeping the page layout. Extract text page by page first, and use the text wherever it keeps the structure. Inspect a page visually only where:
+  - it has little or no text (image-only; HM Land Registry results often are);
+  - it holds a map, plan, annotation, handwriting, ticks or stamps;
+  - a table's columns or rows are lost in the text, or the text is ambiguous;
+  - a row, block or value continues from or onto another page.
+
+  Widen visual inspection to the neighbouring pages when a discrepancy appears: a count mismatch, a broken row, a split reference or an answer that does not fit its question. Identify boilerplate from its text and do not inspect it visually. Record the method used for each page in the manifest (PKG-02).
+- If the authority is Welsh, extract the search as normal, set `jurisdiction: Wales` and add a `jurisdiction_not_validated` flag (CORE-01). Do not substitute English rules or Welsh-form question text from memory.
 - Assign every page to a component (SRCH-02). Recognise components by title and issuer:
   - `llc1_council`: "Register of Local Land Charges", schedules by Part.
   - `llc1_hmlr`: "Local Land Charges official search" under HM Land Registry branding.
@@ -96,6 +103,7 @@ Stated counts ("There is 1 local land charge…", "revealed 15 subsisting regist
   - "Not known" followed by advice is `not_known`.
   - "Not Applicable" followed by an explanatory informative is `not_applicable`; keep the informative.
 - Retain any question that has no canonical code (SRCH-04).
+- Where the form prints a subpart's answer but not its question text (common for nested subparts), set `question_text` to `null` with `value_state: not_stated`, and keep the printed code. Never supply question wording from memory of the form.
 
 ### 4. Entries
 
@@ -111,6 +119,8 @@ Data minimisation: omit applicants' personal names (e.g. "Issued to: …") unles
 
 ### 5. Build nodes
 
+**Evidence model (PKG-04).** Each response and entry in `search_report.data` is the canonical evidence block: it holds the verbatim text, and one `source_reported` assertion gives its page, locator and a short quote. Derived nodes (`local_land_charge`, `application`, `decision`, `authority`, `unresolved_reference`) cite those blocks through `source_entry_ids` (or `source_response_ids`) and their assertions. They do not repeat the verbatim text, the page evidence or a new `source_reported` assertion. Add a field-level assertion only for a value that is normalised (procedure, outcome, an ISO date), inferred (with its basis) or conflicting.
+
 - **`local_land_charge`**: one per LLC entry (LLC-02), holding its format, verbatim category or part, and fields.
 - **`application`** and **`decision`**: one per distinct planning record (HAND, PERM-01). `procedure` comes from the label or reference suffix through the alias table (VOCAB-05: `FUL`, "Full Application" → `full`). `outcome` comes from "Approved" or "Conditional Planning Permission" (outcome alias table). `evidence_level: search_report_only`.
 - **Existing nodes:** if the graph already holds the application (for example from reviewed decision notices), merge into it (PKG-05). Never lower an `evidence_level`.
@@ -118,7 +128,11 @@ Data minimisation: omit applicants' personal names (e.g. "Issued to: …") unles
 - **Dates:** each date keeps its own label (EVID-06). An LLC "dated 24/05/1994" with registration 24/05/1994, alongside a CON29 "Date Decision Issued: 26/05/1994", gives three labelled dates and no conflict. Same label, different value is `conflicting` (EVID-05).
 - **Addresses:** use `site_address_verbatim` for each entry (PERM-06). Variant addresses for one property, such as an old street name, are normal; flag `address_variant` and never normalise them into one.
 - **`authority`**: one node per named body. Record the originating authority as named, including predecessor names and "Secretary of State" or "Historic England" (CUR-07).
-- **Cited parents** (e.g. "pursuant to condition 3 of 19/01234/OUT"): record the typed link at `search_report_only` (REL-05, FAM-08). The target is the matching node if one exists, otherwise an `unresolved_reference` (REL-03).
+- **Cited parents and conditions** (HAND-02): record the typed link stated by the search at `search_report_only` (REL-05, FAM-08), with the cited wording verbatim. No search creates a `permission` or `condition` node, so:
+  - a link stated against a permission ("variation of condition 2 of 19/01234/FUL", "reserved matters pursuant to 19/01234/OUT") targets the cited record's `application` node if it is in the graph, otherwise an `unresolved_reference`;
+  - a link stated against a condition ("details pursuant to condition 3 of 19/01234/OUT") always targets an `unresolved_reference` for that permission and condition number, holding `candidate_parent_node_id` where the cited application is in the graph;
+  - the source is the decision where an outcome is stated, otherwise the application. A pending, withdrawn or undecided application carries the link as proposed (`attributes.proposed: true`).
+- **Candidate links** (HAND-03): add `possibly_related_to` only where a reference pattern (`/RM`, `/NMA`, `/DIS`, `/DOC`, a shared stem with a procedure suffix) or substantive wording suggests a procedural connection. A shared address, the same search or the chronology alone does not need an edge; the Permission Family skill generates those candidates when it maps a family.
 
 ### 6. Read components together
 
@@ -127,19 +141,31 @@ Data minimisation: omit applicants' personal names (e.g. "Issued to: …") unles
 
 ### 7. Validate and reconcile
 
-- Every response and entry has page evidence, and every link resolves or is an unresolved reference.
+Run these checks once, over the finished extraction. Fix any failure, re-run only the checks it affects, then stop.
+
+**Structural (required for `graph-valid`):**
+- Every PKG-02 key is present, IDs are unique, and every link resolves to a node or an `unresolved_reference`.
+- Every response and entry has a `source_reported` assertion with a page; every derived node cites a response or entry.
+- Every page is assigned to a component, with none left over, and every continuation is joined or flagged.
+- Every selected question has a response, including each nested subpart and each negative answer.
 - Stated counts match the counts extracted (LLC-07), or the difference is a gap.
-- Every page is assigned to a component, with none left over.
-- Every selected question has a response.
-- No `permission` nodes; no dates derived from other dates; no translated use classes (CUR-01).
+- No `permission` or `condition` nodes; every date keeps its label; no date is derived from another; no use class is translated (CUR-01).
+
+**Factual (targeted):** go back to the page image only for flagged items, count mismatches, continuations and any answer classified `other` or `illegible`. Do not re-read every entry. Record what was checked in the manifest.
+
+**Formal schema (`type-valid`):** not available until schemas exist. Do not claim it, and do not write schemas during a run.
+
+The run is complete when the structural checks pass, or each failure is recorded as a gap or flag.
 
 ### 8. Emit
 
-Write the graph revision (PKG-03), then the exceptions report (template T5): under one page, ordered by unreadable or missing material, count mismatches, flags needing review, and unmapped questions. Finish with one line stating the validation level reached. Do not add legal commentary.
+Write the graph revision (PKG-03), then the exceptions report (template T5): under one page, ordered by unreadable or missing material, count mismatches, flags needing review, and unmapped questions. Finish with one line stating the validation level reached. Do not add legal commentary. These two files are the whole output of an ordinary run; write diagnostics only in test mode.
 
 ## Respond
 
-Answer only from the graph. Use the templates in [outputs.md](references/outputs.md), and check the reply against its examples before sending. Cite page numbers, and keep source wording for references, descriptions and outcomes.
+Answer only from the graph. Use the templates in [outputs.md](references/outputs.md), and check the reply against its examples before sending. Cite page numbers, and keep source wording for references, descriptions and outcomes. Do not state legal conclusions (CORE-04).
+
+- **Search added, no question asked (T6):** a short completion reply with the headline counts, the most important exceptions and links to the graph and the exceptions report. Do not repeat their contents.
 
 - **Planning history (T1):** merge appearances of the same record (RESP-07) and show every source. Order rows by the earliest labelled date, and say which label was used. Include refusals, withdrawals and pending items. List building control separately, and only on request.
 - **Summary (T2):** go through each component in order. Mention every gap and exception.
@@ -148,15 +174,13 @@ Answer only from the graph. Use the templates in [outputs.md](references/outputs
 
 ## When the user asks to test this skill
 
-Run the skill on the supplied search for real. Keep the task output (Part A) separate from a diagnostic report (Part B). Part B covers:
+Use this section only when the user explicitly asks to test, evaluate or debug the skill. Run the skill on the supplied search for real. Keep the task output (Part A) separate from a diagnostic report (Part B). Part B covers:
 - ambiguous, missing or misleading instructions, and the rule IDs involved;
 - layouts the workflow did not anticipate;
 - which validation checks were actually performed;
 - which steps were limited by the environment, such as being unable to save the graph or read page images.
 
-Propose concrete instruction changes, but do not change the skill unless asked.
-
-  Do not state legal conclusions (CORE-04).
+Propose concrete instruction changes, but do not change the skill unless asked. Report elapsed time by stage where the environment shows it, separating skill work from repository discovery and one-off setup.
 
 ## Search data
 
@@ -166,7 +190,9 @@ The graph envelope and assertion rules are in PKG-02 and PKG-04. `search_report.
 - `responses[]`: `response_id`, `component_id`, `source_code`, `canonical_code`, `question_text`, `answer_verbatim`, `answer_classification`, `scope`, `informatives[]`, `entry_ids[]`, `shared_answer_with[]`, `assertion_ids`;
 - `entries[]`: `entry_id`, `component_id`, `entry_kind`, `source_response_ids`, `verbatim_text`, `fields{}`, `references[]`, `dates[]`, `linked_node_ids[]`, `assertion_ids`.
 
-Flag codes: `address_variant`, `continuation_uncertain`, `count_mismatch`, `form_version_uncertain`, `conflicting_values`, `register_supplied_field`, `reference_missing`, `component_unrecognised`, `reads_with_llc`, `pre_2016_numbering`.
+Derived nodes add `source_entry_ids` or `source_response_ids` to their `data`; the verbatim text stays on the entry.
+
+Flag codes: `address_variant`, `continuation_uncertain`, `count_mismatch`, `form_version_uncertain`, `conflicting_values`, `register_supplied_field`, `reference_missing`, `component_unrecognised`, `reads_with_llc`, `pre_2016_numbering`, `jurisdiction_not_validated`.
 
 ## Calibration
 

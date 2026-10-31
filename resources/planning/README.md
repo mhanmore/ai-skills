@@ -93,10 +93,10 @@ A skill declares the bundles it loads, the rule IDs it relies on or overrides (f
 
 1. Inventory the documents and pages; identify components (SRCH-02).
 2. Assess the text layer and OCR each page as needed; record checksums and extraction method.
-3. Read the layout visually where tables, ticks or continuation pages need it.
+3. Read the layout visually only where the text loses it: low-text pages, maps, annotations, ambiguous tables and continuations.
 4. Extract responses and entries verbatim before normalising.
 5. Reconcile coverage; record gaps (RESP-06).
-6. Map entries to nodes; generate candidates (HAND).
+6. Map entries to nodes, citing entries as evidence; record stated links and bounded candidates (HAND).
 7. Validate at the three levels above.
 8. Emit JSON, an exception report and a manifest.
 

@@ -60,6 +60,16 @@ Coverage limits: [stated limits or "none stated"] · Graph: [location] r[n]
 Validation level reached: [graph-valid / …]
 ```
 
+### T6 · Completion reply (search added, no question asked)
+
+```markdown
+Added search [report ref] ([components]) to the matter graph as r[n].
+[n] responses, [n] entries, [n] planning records ([n] pending). Exceptions: [n] (top items: [one line each, at most three]).
+Exceptions report: [location] · Validation: [level]
+```
+
+No tables, no summary of every component, no diagnostics. Offer T1, T2 or T3 in one line. The T4 footer gives the graph location.
+
 ## Examples
 
 Each pair shows the mistake (✗) and the correct version (✓).
@@ -95,3 +105,11 @@ Each pair shows the mistake (✗) and the correct version (✓).
 **E8 · Pre-2016 numbering (CON29R-04)**
 ✗ An older-form "3.10 No" recorded as "No CIL liability"
 ✓ Form identified as pre-2016, with 3.10 mapped to conservation area. CIL is `not_searched`.
+
+**E9 · Provenance repeated on derived nodes (PKG-04, HAND-01)**
+✗ An `application` node for EX/14/3676/FUL that restates the CON29 description and page quote in a new `source_reported` assertion, duplicating the entry
+✓ The application's `data.source_entry_ids` lists the CON29 1.1(a) and LLC entries; its only own assertions are `normalised` ones, e.g. `procedure: full` from "FUL"
+
+**E10 · Candidate edges from address alone (HAND-03)**
+✗ `possibly_related_to` between every pair of planning records in the search because they share the site address
+✓ One candidate between EX/19/0456/OUT and EX/20/0112/RM (shared stem, `/RM` suffix); no edge between unrelated records at the same address

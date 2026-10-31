@@ -2,16 +2,17 @@
 label: Local Search
 description: >-
   Use when the user asks to read, summarise, extract from or answer questions
-  about a local authority search for land in England or Wales: an LLC1 local land
-  charges result (council-issued or HM Land Registry official search), CON29
-  required or optional enquiries, or a provider's personal or regulated search
-  pack. Trigger on requests such as "summarise the planning history in the
-  local search", "what does the CON29 say about tree preservation orders?",
-  "read the search pack" or "add the search to the matter graph". Do not
-  activate for drainage and water searches (CON29DW), coal mining searches
-  (CON29M), environmental reports or title documents; for planning
-  decision notices, which @decision-notice handles; or for mapping
-  permission families, which @permission-family handles.
+  about a local authority search for land in England or Wales: an LLC1 local
+  land charges result (council-issued or HM Land Registry official search),
+  CON29 required or optional enquiries, or a provider's personal or regulated
+  search pack. Trigger on requests such as "summarise the planning history in
+  the local search", "what does the CON29 say about tree preservation
+  orders?", "read the search pack" or "add the search to the matter graph".
+  Use this skill for reading the search itself, not for reading planning
+  decision notices or permission-family mapping: use decision-notice or
+  permission-family respectively for those tasks. Do not use for drainage and
+  water searches (CON29DW), coal mining searches (CON29M), environmental
+  reports or title documents.
 userFacingDescription: >-
   Reads a local authority search (LLC1 and CON29) into a structured,
   page-referenced record and answers questions from it, such as planning
@@ -171,7 +172,7 @@ Answer only from the graph. Use the templates in [outputs.md](references/outputs
 - **Planning history (T1):** merge appearances of the same record (RESP-07) and show every source. Order rows by the earliest labelled date, and say which label was used. Include refusals, withdrawals and pending items. List building control separately, and only on request.
 - **Summary (T2):** go through each component in order. Mention every gap and exception.
 - **Specific question (T3):** quote the relevant response or entry. A Part 3 answer is always read together with the LLC (CON29R-03).
-- **Family questions:** if the request asks about a permission's family or the documents missing from it, call @permission-family once the graph is written and give its answer. Otherwise offer it in one line.
+- **Family questions:** do not call @permission-family; it calls this skill, and calls run one way only. Where the request asks about a permission's family or the documents missing from it, offer it in one line.
 - **Conditions or operative wording** of a record known only from the search: say the search does not give them, and that @decision-notice reads the decision notice once supplied.
 - **Every reply** ends with the footer (T4).
 

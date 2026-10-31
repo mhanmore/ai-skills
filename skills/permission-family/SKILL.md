@@ -7,11 +7,12 @@ description: >-
   approvals, approvals of details under conditions and appeals. Trigger on
   requests such as "map the permission family for 19/01234/OUT", "update the
   family now the notices are in", "which permission does this NMA belong to?"
-  or "what documents are missing from the family?". Works from the planning
-  records in the matter graph, calling @local-search or @decision-notice
-  first for any documents not yet read. Do not activate for reading a local
-  search or a decision notice without a family question, drafting planning applications, or advising whether
-  a permission is implemented, lawful or extant.
+  or "what documents are missing from the family?". Works from planning
+  records in the matter graph. Use this skill for permission-family mapping,
+  not standalone reading of a local search or decision notice: use local-
+  search or decision-notice respectively for those tasks. Do not use for
+  drafting planning applications or advising whether a permission is
+  implemented, lawful or extant.
 userFacingDescription: >-
   Maps a planning permission's family (section 73 branches, non-material
   amendments, reserved matters and condition approvals) from the records in

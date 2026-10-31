@@ -7,10 +7,11 @@ description: >-
   section 96A non-material amendment. Trigger on requests such as "read the
   decision notice for 19/01234/FUL", "what conditions are on this
   permission?", "what does condition 7 require?" or "add these notices to the
-  matter graph". Do not activate for local authority searches, which @local-search
-  handles; for mapping permission families, which @permission-family
-  handles; or for advising whether a permission is implemented,
-  lawful, extant or complied with.
+  matter graph". Use this skill for reading planning instruments, not for
+  reading a local authority search or permission-family mapping: use local-
+  search or permission-family respectively for those tasks. Do not use for
+  advising whether a permission is implemented, lawful, extant or complied
+  with.
 userFacingDescription: >-
   Reads planning decision notices, appeal decisions and approvals into a
   structured, page-referenced record of the permission, its conditions,
@@ -133,7 +134,7 @@ Answer only from the graph. Use the templates in [outputs.md](references/outputs
 - **Instruments added, no question asked (T6):** headline counts, promotions from search evidence and the main exceptions. Do not repeat the graph.
 - **Instrument summary (T1)** and **conditions list (T2):** one block per instrument, in decision-date order.
 - **Specific condition (T3):** quote the condition and its reason. List any approvals or later instruments the graph links to it, without saying whether it is discharged or what its current wording is (COND-03).
-- **Family questions:** if the request also asks about the family, branches or missing documents, call @permission-family once the graph is written and give its answer. Otherwise, where cited records remain unresolved, offer it in one line.
+- **Family questions:** do not call @permission-family; it calls this skill, and calls run one way only. Where the request asks about the family, branches or missing documents, or cited records remain unresolved, offer it in one line.
 - **Every reply** ends with the footer (T4).
 
 ## When the user asks to test this skill

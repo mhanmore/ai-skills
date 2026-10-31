@@ -1,150 +1,82 @@
 ---
 id: planning.permissions
-type: domain_resource
+kind: resource_bundle
 jurisdiction: England
 status: draft
-verified: 2026-10-31
+requires: [planning.core]
+nodes: [PERM, READ, S73, S96A, RM, COND, ROUTE, FAM]
 ---
 
 # Planning permissions
 
-Compact reference for identifying planning permissions and their family records. Preserve source wording and evidence; do not infer legal effect from a portal label, reference suffix or chronology alone.
+Rules for extracting and linking applications, decisions, permissions and their family records. Load with [core](core.md). Rule tags are defined there.
 
-## 1. Core distinction
+The aim is useful extraction, not legal determination. Where a document departs from what the law appears to allow, record it as issued and flag it (CORE-02).
 
-- **Application:** procedural request; may be pending, withdrawn or refused.
-- **Decision:** determination of an application or later request.
-- **Permission:** authorising instrument established by a grant.
-- **Family record:** later decision or instrument connected to a permission. Not every family record is itself a permission.
+## PERM · Applications, decisions and permissions
 
-Keep these as separate graph nodes. Expose a family hierarchy for navigation, but retain typed graph relationships because a record may concern several permissions, conditions, phases or matters.
+- **PERM-01** `model` A planning-history row is an `application` unless the evidence shows more. Add a `decision` where an outcome is stated. Withdrawn, invalid and pending items stay as applications with no decision.
+- **PERM-02** `model` Default permission threshold: create a `permission` only where a decision granting planning permission is evidenced at `instrument_reviewed` (a decision notice or appeal decision letter). Below that level, record the application and a decision with `outcome: granted` and the actual `evidence_level`. A skill contract may allow promotion to a provisional permission; record that promotion as an explicit assertion.
+- **PERM-03** `model` Keep authority and decision maker apart. `authority_id` is the LPA in whose area the land lies, as named on the instrument; references are scoped to it, and it drives most interpretation. `decision_maker_id` records who decided: the LPA, an Inspector, the Secretary of State, the Mayor of London or a county council. An appeal reference (APP/…) is an additional reference on the appeal decision. Where land spans authorities, record each.
+- **PERM-04** `model` Keep references verbatim as strings, with every alternative and portal reference, preserving punctuation and leading zeroes. A reference is unique only within its authority.
+- **PERM-05** `model` Keep descriptions as separate fields. `description_operative` is the wording on the decision notice. Each other source (application form, portal, search) gets its own `description_source` entry, because these often differ and search descriptions are often truncated. Never merge them.
+- **PERM-06** `model` Record the site as the instrument's address verbatim (`site_address_verbatim`), with a location description where there is no postal address. Matching a site across instruments is an identity judgement: an address match makes a candidate (REL-02), not an identity.
+- **PERM-07** `model` Record dates as labelled (EVID-06): received, validated, committee resolution, decision, issue. A committee resolution is not a decision.
+- **PERM-08** `model` Record time-limit wording as printed. Calculated deadlines belong only in derived assessments, never in extraction.
 
-## 2. Permission node
+## READ · Reading an instrument
 
-### Required identity
+- **READ-01** `practice` Capture the whole notice: description; numbered conditions, each with its reason; informatives kept separate; the approved plans and documents list (number, revision, title, date); and any document incorporated by reference.
+- **READ-02** `law` A permission is read as a public document. Its meaning comes from the notice, its conditions and reasons, and the documents it incorporates (*Trump International v Scottish Ministers* [2015] UKSC 74; *Lambeth LBC v SSCLG* [2019] UKSC 33). Flag any reliance on application material that is not incorporated.
+- **READ-03** `practice` Hybrid permissions: record each component's full or outline treatment and its reserved matters, using the notice's labels.
+- **READ-04** `practice` Some conditions apply without being printed (CUR-02). An unprinted condition is not evidence that the condition is absent.
 
-| Field | Rule |
-| --- | --- |
-| `node_id` | Stable opaque internal ID. |
-| `node_type` | `permission`. |
-| `schema_ref` | Versioned permission schema. |
-| `jurisdiction` | Explicit; this resource covers England. |
-| `authority_id` | Link to the deciding authority. |
-| `reference` | Authority-scoped reference, preserved verbatim as a string. |
-| `granting_decision_id` | Decision that establishes the permission. |
-| `decision_date` | Date on the granting instrument; do not substitute validation, committee or portal dates. |
-| `description_verbatim` | Operative/source description without rewriting. |
-| `site_id` | Link to site node; retain instrument-specific geographic scope. |
-| `permission_form` | `full`, `outline`, `hybrid`, `other`, `unknown`. |
-| `procedure` | How the permission arose: for example `full_application`, `outline_application`, `section_73`, `appeal`, `other`, `unknown`. |
-| `source_document_ids` | Granting notice and any other relied-on instruments. |
-| `assertion_ids` | Evidence for material fields. |
+## S73 · Section 73 and section 73A
 
-Keep `permission_form`, application `procedure`, decision `outcome` and `decision_route` on independent axes. Do not collapse labels such as “outline”, “section 73”, “granted” and “appeal” into one type field. Treat `hybrid` as a source-supported classification and describe its component-level full/outline treatment.
+- **S73-01** `law` A grant under s73 is a new permission; the earlier permission continues to exist. `model`: create a new permission node, link it with `varies_under_s73`, and never mutate the earlier node.
+- **S73-02** `model` Conditions printed on the new instrument belong to it. Record which conditions the decision says it varies or removes. Where the new instrument cross-refers to earlier approvals, record that reference; otherwise do not carry approvals forward.
+- **S73-03** `law` → flag. Section 73 concerns conditions. It cannot change the description of development (*Finney v Welsh Ministers* [2019] EWCA Civ 1868), extend the commencement time limit (s73(5)), or be granted once the earlier permission has expired (s73(4)). Some instruments still attempt these things: record them as issued and raise a review flag, without rejecting or correcting.
+- **S73-04** `practice` Planning obligations do not automatically attach to a s73 permission. Record any deed of variation or linking clause; otherwise flag that the obligation linkage is not evidenced.
+- **S73-05** `law` Section 73A grants retrospective permission, including for development carried out without complying with a condition. Create a permission node with `procedure: s73a`.
 
-### Common detail
+## S96A · Non-material amendments
 
-- Alternative and portal references.
-- Application, validation, resolution, issue and appeal dates as distinct fields.
-- Decision maker and route: authority, appeal, call-in, other or unknown.
-- Development components, phases, buildings, units, uses and quantities.
-- For each component: full/outline treatment and matters reserved.
-- Conditions and reasons; condition number is local to its owning instrument.
-- Approved drawings/documents with number, revision, date, scope and approval evidence.
-- Time-limit wording and other milestones. Store calculated deadlines only as derived assessments.
-- Linked obligations, CIL material, appeals and court decisions.
-- Review scope, unresolved gaps and evidence cutoff.
+- **S96A-01** `law` Section 96A changes an existing permission; it does not issue a new one. `model`: create a decision node with `procedure: s96a`, linked by `amends_under_s96a` to the stated target. Create no permission node, even where the portal shows a separate reference.
+- **S96A-02** `law` / `practice` Changes can impose, remove or alter conditions (s96A(3)). In practice they sometimes alter the description. Record the exact changes and their scope.
+- **S96A-03** `model` The amended permission is a derived view: the target plus every s96A decision, in decision order.
+- **S96A-04** `practice` Non-material amendments are also made against s73 permissions and against details approved under reserved matters or conditions. Record the target as stated.
 
-Do not treat issue as proof of implementation, lawfulness, currency, expiry or which parallel permission was implemented.
+## RM · Reserved matters
 
-## 3. Family hierarchy
+- **RM-01** `law` The reserved matters are access, appearance, landscaping, layout and scale (DMPO 2015 art 2). Record each matter addressed; use `other` or `unknown`, with the source label, for anything else.
+- **RM-02** `model` Create a decision node linked by `reserved_matters_under` to the outline permission. Record the phase or component and whether all or only some matters are covered.
+- **RM-03** `practice` Several or alternative approvals for the same matter or phase are normal. Keep them all; do not select one.
 
-```text
-permission
-├── section 73 permission
-├── section 96A amendment decision
-├── reserved-matters approval
-├── condition approval/discharge decision
-└── other linked records: appeal, correction, obligation, court decision, enforcement
-```
+## COND · Conditions and approvals
 
-This is a consumption view, not a single-parent ontology. Use the rules below when creating nodes and edges.
+- **COND-01** `model` Give each condition a stable `condition_id`; `condition_number` is local to its owning permission. Map renumbering, splitting or deletion across instruments only on evidence.
+- **COND-02** `model` A condition approval is a decision with `procedure: condition_approval`, linked by `approves_details_under_condition` to the condition ID(s). Record the submitted material, decision wording, scope, partial approval, caveats and any continuing duties.
+- **COND-03** `model` Keep four questions separate: discharge as reported by a source; the formal decision; documentary coverage; physical compliance.
+- **COND-04** `practice` Record each condition's trigger as worded: before commencement, before occupation, compliance or retention, or phase-specific. Flag any pre-commencement condition with no evidenced approval, without concluding on implementation.
+- **COND-05** `model` Never propagate an approval to a parallel permission or a similarly numbered condition without evidence.
 
-### Section 73: vary or remove conditions
+## ROUTE · Other authorisation routes
 
-- **Node type:** `permission`; procedure `section_73`.
-- A grant under section 73 is a new, independent permission alongside the earlier permission; do not overwrite or mutate the earlier node.
-- Link with `varies_under_s73` to the identified earlier permission.
-- Record affected conditions and exact effect. Restated conditions belong to the new instrument.
-- Do not infer that the section 73 permission was implemented or superseded the earlier permission.
-- Section 73 operates through conditions, not the operative description of development; do not use it to model a changed description without authoritative evidence explaining the position.
+These are recorded when encountered, not sought (CORE-03).
 
-### Section 96A: non-material amendment
+- **ROUTE-01** `model` Prior approvals, certificates of lawfulness, permission in principle or technical details consent, listed building consent, conservation area consent, advertisement consent and tree works are applications and decisions with the matching `procedure`. They create no permission node.
+- **ROUTE-02** `model` A document may cite permitted development, a local or neighbourhood development order, a development consent order, deemed permission or immunity as the basis for development. Record the citation verbatim as the reported basis and flag it; investigate only if the task asks.
 
-- **Node type:** `amendment_decision`; procedure `section_96a`.
-- Link with `amends_under_s96a` to the permission or other eligible target identified by the decision.
-- The decision concerns the approved non-material change; it is not a reissued permission. Read it with the target instrument.
-- Record the exact amendment, affected plans/conditions/components and decision outcome.
-- Do not create a new permission node merely because a portal presents a separate application reference.
+## FAM · Family traversal
 
-### Reserved-matters approval (RMA)
+- **FAM-01** `model` Start from the task's subject record or from an evidenced permission, not from every history row.
+- **FAM-02** `model` Follow typed edges in both directions. Keep every branch and every overlapping family (REL-04).
+- **FAM-03** `model` Match references within an authority. An address match alone gives only a candidate.
+- **FAM-04** `law` → flag. Overlapping permissions on the same land can be mutually incompatible (*Hillside Parks v Snowdonia NPA* [2022] UKSC 30). Keep all of them and flag the overlap. Never discard a permission or mark it lapsed or superseded on that basis.
+- **FAM-05** `model` A "current consolidated permission" is a dated, derived assessment over a declared path and a declared evidence set.
 
-- **Node type:** `reserved_matters_decision`.
-- Link with `reserved_matters_under` to the outline permission.
-- Record each matter addressed: `access`, `appearance`, `landscaping`, `layout`, `scale`, plus source-qualified `other` or `unknown`.
-- Record component/phase and whether the submission covers all or only some outstanding matters.
-- Approval supplies detail under the outline permission; do not silently label it a standalone planning permission.
-- Alternative approvals may exist for the same matter. Dates alone do not establish which scheme was implemented.
+## Sources
 
-### Approval or discharge of condition
-
-- **Node type:** `condition_decision`.
-- Link with `approves_details_under_condition` to the permission and stable condition ID, not only the displayed number.
-- Record application reference, submitted material, formal decision wording, date, requirements and geographic/operational scope covered.
-- Preserve partial approvals, caveats, phased approvals and continuing implementation, retention, monitoring or timing duties.
-- Keep four questions separate: source-reported discharge, formal decision, documentary coverage and physical/legal compliance.
-- Do not propagate an approval to a parallel permission or similarly numbered condition without evidence.
-
-## 4. Other family records
-
-Add types when evidenced; the list is open. Common relationships include:
-
-| Relationship | Meaning |
-| --- | --- |
-| `appeal_of` | Appeal targets an application or decision. |
-| `corrects` | Formal correction of an identified instrument. |
-| `relates_to_obligation` | Link to a planning obligation and, where known, clause/scope. |
-| `reported_as_related_to` | Source states a relationship but its legal type is unresolved. |
-| `possibly_related_to` | Candidate link requiring review. |
-
-Use an unresolved target object where a source cites a missing permission or condition. Never invent the parent from a reference pattern.
-
-## 5. Family traversal rules
-
-1. Start from an evidenced permission, not every planning-history row.
-2. Follow typed edges in both directions; retain branches and overlapping families.
-3. Match references within authority and site scope; an address match alone is insufficient.
-4. Preserve every instrument and decision as a separate node.
-5. Treat a “current consolidated permission” as a dated assessment over a declared path and evidence set.
-6. Keep conflicting assertions until reviewed resolution; do not prefer the newest-looking record automatically.
-
-## 6. Minimum extraction from a search report
-
-A search entry may support provisional Application and Decision nodes, but create a Permission node only when the evidence establishes an authorising grant under the applicable contract. Retain:
-
-- authority; reference; source description; source outcome;
-- every stated date with its source meaning;
-- property/site wording and report scope;
-- source question, row, page and report effective date;
-- evidence level `search_report_only` until underlying material is reviewed;
-- unresolved parent, condition or phase references.
-
-## 7. Authoritative anchors
-
-- [Town and Country Planning Act 1990, section 73](https://www.legislation.gov.uk/ukpga/1990/8/section/73)
-- [Town and Country Planning Act 1990, section 96A](https://www.legislation.gov.uk/ukpga/1990/8/section/96A)
-- [Planning Practice Guidance: flexible options for planning permissions](https://www.gov.uk/guidance/flexible-options-for-planning-permissions)
-- [Planning Practice Guidance: making an application](https://www.gov.uk/guidance/making-an-application)
-- [Development Management Procedure (England) Order 2015](https://www.legislation.gov.uk/uksi/2015/595/contents)
-
-These anchors support classification; the instrument and matter-specific evidence control the extracted record. Recheck sources when this resource is operationalised or the law changes.
+- [TCPA 1990 s73](https://www.legislation.gov.uk/ukpga/1990/8/section/73), [s73A](https://www.legislation.gov.uk/ukpga/1990/8/section/73A), [s96A](https://www.legislation.gov.uk/ukpga/1990/8/section/96A)
+- [DMPO 2015](https://www.legislation.gov.uk/uksi/2015/595/contents)
+- [PPG: flexible options for planning permissions](https://www.gov.uk/guidance/flexible-options-for-planning-permissions)

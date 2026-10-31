@@ -1,160 +1,124 @@
 ---
 id: planning.local_authority_searches
-type: domain_resource
+kind: resource_bundle
 jurisdiction: England
 status: draft
-verified: 2026-10-31
+requires: [planning.core, planning.permissions]
+nodes: [SRCH, RESP, LLC, CON29R, CON29O, HAND]
 ---
 
 # Local authority searches
 
-Reference for ingesting search reports without treating them as complete proof of the current legal position. Preserve the report's form/version, selected enquiries, source order, answers, qualifications and effective dates.
+Rules for ingesting search reports. A search is a dated report about records; it does not prove the current legal position. Load with [core](core.md); add [permissions](permissions.md) for the planning handoff.
 
-## 1. What a search contains
+## SRCH · Report and components
 
-A commonly described full local authority search has distinct components:
-
-| Component | Function |
-| --- | --- |
-| `LLC1` / official local land charges certificate | Search of the applicable Local Land Charges Register for entries affecting the searched land. Registration responsibility is migrating authority by authority to HM Land Registry. |
-| `CON29R` / CON29 required enquiries | Standard enquiries answered from local-authority and related records; includes planning/building control, roads/public rights of way and other matters. |
-| `CON29O` | Separately selected optional enquiries. |
-| Additional enquiries/attachments | Request-specific questions, plans, schedules and supplied documents. |
-
-Do not merge these components. A personal search, provider report or combined PDF may have different responsibility, assurance, coverage and presentation. Record the provider, replying bodies and report type rather than inferring them from appearance.
-
-## 2. Report envelope and sections
-
-Capture before interpreting entries:
-
-- report/search ID, provider, ordering party if required, report type and form/version;
-- searched property wording, plan/boundary, parcels and mismatch warnings;
-- relevant authority/authorities and separate replying bodies;
-- request, issue, effective/“as at” and question-specific dates;
-- included components, selected optional/additional questions and exclusions;
-- every source document, page count, attachment and missing/unreadable item;
-- qualifications, caveats, limitations and contact/copy-document directions.
-
-Retain source sections in their original order. Map them to canonical topics separately; do not require every provider to use the headings below.
-
-## 3. CON29R standard enquiry subject list
-
-Use form/version plus question text when mapping. The current working baseline is the CON29 Enquiries of Local Authority (2016), questions 1 to 3.15. Preserve subquestions even when the answer is combined.
-
-### 1. Planning and building regulations
-
-| Code | Canonical subject | Material covered |
+| Component | Function | Answered by |
 | --- | --- | --- |
-| `1.1` | Planning and building decisions; pending applications | Planning permission; listed-building and conservation-area consents; existing/proposed lawful-development certificates; proposed-works certificate for listed buildings; heritage partnership agreements and listed-building consent orders; building-regulations approvals, completion certificates and competent-person certificates/notices. |
-| `1.2` | Planning designations and proposals | Existing/proposed development-plan land-use designations and specific proposals for the property. |
+| `LLC1` | Official search of the local land charges register | The council or HM Land Registry (CUR-06) |
+| `CON29R` | Required enquiries | The council; in two-tier areas the county may answer highways and other matters |
+| `CON29O` | Optional enquiries, selected per search | As CON29R |
+| Additional | Request-specific questions, plans, schedules, attachments | As stated |
 
-Treat each listed record as an entry. A permission, application, consent, certificate, agreement and building-control record remain different entity types.
+- **SRCH-01** `model` Never merge components. Record the provider, every replying body and the report type: `official`, `personal`, `other` or `unknown`. Take these from the report's statements, not its appearance.
+- **SRCH-02** `practice` Classify by issuing body and form title, not by the "CON29" prefix. CON29DW (drainage and water; from the water company) and CON29M (coal mining; Coal Authority-based) are separate searches that often appear in the same pack.
+- **SRCH-03** `model` Capture the envelope before reading any entries. That means:
+  - report ID, form and version;
+  - the searched property wording, plan or boundary, and any mismatch warnings;
+  - request, issue, "as at" and question-specific dates (EVID-06);
+  - the components included, the optional and additional questions selected, and any exclusions;
+  - every document, its page count, and any attachments that are missing or unreadable;
+  - caveats, limitations and copy-document directions.
+- **SRCH-04** `model` Keep sections in source order. Map them to canonical codes separately. Retain unmapped questions and provider-specific sections: the code tables below are not a discard filter.
+- **SRCH-05** `practice` The search plan governs the spatial scope; address similarity does not establish that the land is the same. Planning history can include neighbouring land.
 
-### 2. Roads and public rights of way
+## RESP · Responses and entries
 
-| Code | Canonical subject |
+- **RESP-01** `model` Use two linked layers. `responses[]` holds every question and subquestion with its answer, in source order, including negative and qualified answers. `entries[]` holds every listed record, linked to domain nodes only where identity is justified.
+- **RESP-02** `model` Response fields: source code and text; canonical code; verbatim answer; `answer_classification`; scope; replying body; entry IDs; evidence.
+- **RESP-03** `model` `answer_classification`:
+
+| Value | Typical wording |
 | --- | --- |
-| `2.1` | Status of named roads, footways and footpaths: publicly maintainable, bonded adoption, frontager works or adoption without reclaiming frontager cost. |
-| `2.2` | Public rights of way abutting or crossing the property shown on a definitive/revised map. |
-| `2.3` | Pending applications to record such public rights of way. |
-| `2.4` | Unimplemented/unmapped orders to stop up, divert, alter or create such public rights of way. |
-| `2.5` | Plan showing the approximate route where applicable. |
+| `entries_listed` | A list or table of records |
+| `negative` | "No", "None" |
+| `negative_knowledge_limited` | "Not aware", "None recorded" |
+| `qualified` | An answer with conditions or caveats |
+| `referred_elsewhere` | "See LLC1", "Contact the county council" |
+| `see_attachment` | "See attached schedule" |
+| `not_answered` | Left blank or declined |
+| `not_searched` | The question was not selected or not covered |
+| `not_applicable` | Stated as not applicable |
+| `illegible` | Cannot be read |
+| `other` | Anything else; keep the text |
 
-### 3. Other matters
+- **RESP-04** `practice` Record the temporal coverage stated for a response (for example "records since 1974") as part of that response's scope, not only in the general caveats.
+- **RESP-05** `model` Entry fields: source entry type; verbatim text; references; authority; labelled dates; source response IDs; linked entity IDs or unresolved references; evidence; review state.
+- **RESP-06** `model` A missing schedule, an unreadable page or a failed extraction is never a negative answer (EVID-08).
+- **RESP-07** `model` The same record appearing under several questions gets a separate entry for each appearance. Resolve them to one shared entity only on identity evidence: the same authority plus the same reference.
+- **RESP-08** `model` Every search statement is `source_reported` until it has been checked against the underlying instrument or register.
 
-| Code | Canonical subject |
+## LLC · Local land charges
+
+- **LLC-01** `practice` The LLC1 and CON29 answer different questions. Local land charges are public-law financial charges, restrictions or obligations that bind successive owners and occupiers. CON29 can report matters that are not charges, such as refused or pending applications and highway status. An empty LLC1 result does not establish the absence of permissions, applications or other matters, and a CON29 planning history does not substitute for the LLC1.
+- **LLC-02** `model` Model each entry as a `local_land_charge` with: originating authority, registration details, category, burdened land, verbatim wording, and a link to the underlying instrument where established. The registration is not the instrument.
+- **LLC-03** `practice` Planning conditions, and often the permissions themselves, are registered as local land charges. The LLC1 therefore frequently duplicates material that also appears in CON29R 1.1. Keep the entries separate and link them under RESP-07.
+- **LLC-04** `practice` Council registers use the legacy parts: 1 general financial, 2 specific financial, 3 planning, 4 miscellaneous, 5 fenland ways, 6 land compensation, 7 new towns, 8 civil aviation, 9 opencast coal, 10 listed buildings, 11 light obstruction, 12 drainage schemes. HM Land Registry results use their own categories. Record the category verbatim in either case.
+
+## CON29R · Required enquiries (2016 form)
+
+This is the working baseline. Before mapping, check the form and version printed on the report, and map on question text as well as the code.
+
+| Code | Subject |
 | --- | --- |
-| `3.1` | Land required for public purposes. |
-| `3.2` | Land to be acquired for road works. |
-| `3.3` | Sustainable drainage matters. |
-| `3.4` | Nearby road schemes. |
-| `3.5` | Nearby railway, tramway, light-railway or monorail schemes. |
-| `3.6` | Approved but unimplemented traffic schemes affecting named routes near the property. |
-| `3.7` | Outstanding statutory notices: building, environment, health and safety, housing, highways, public health, flood/coastal erosion. |
-| `3.8` | Authorised proceedings for contravention of building regulations. |
-| `3.9` | Planning-Act notices, orders, directions and proceedings. |
-| `3.10` | Community Infrastructure Levy schedules, notices, payments, appeals, liability orders and enforcement. |
-| `3.11` | Historic or proposed conservation-area designation matters specified by the form. |
-| `3.12` | Enforceable compulsory-purchase order or decision. |
-| `3.13` | Contaminated-land notices, register decisions/entries and pre-remediation-notice consultation. |
-| `3.14` | Radon Affected Area indication. |
-| `3.15` | Asset-of-community-value nomination/listing, review/appeal, restriction and disposal/bidder status. |
+| `1.1` | Planning and building decisions and pending applications. Subparts: (a) planning permissions; (b) listed building consents; (c) conservation area consents; (d) certificates of lawfulness, existing; (e) certificates of lawfulness, proposed; (f) certificates of proposed works for listed buildings; (g) heritage partnership agreements; (h) listed building consent orders; (i) local listed building consent orders; (j) building regulations approvals; (k) building regulations completion certificates; (l) competent-person certificates or notices. Each subpart is a separate response, even where the answer is combined. |
+| `1.2` | Planning designations and proposals in existing or proposed development plans |
+| `2.1` | Status of named roads, footways and footpaths |
+| `2.2` | Public rights of way abutting or crossing the property |
+| `2.3` | Pending applications to record public rights of way |
+| `2.4` | Orders to stop up, divert, alter or create public rights of way |
+| `2.5` | Plan of the route |
+| `3.1` | Land required for public purposes |
+| `3.2` | Land to be acquired for road works |
+| `3.3` | Drainage matters (SuDS) |
+| `3.4` | Nearby road schemes |
+| `3.5` | Nearby railway schemes |
+| `3.6` | Traffic schemes |
+| `3.7` | Outstanding notices |
+| `3.8` | Contravention of building regulations |
+| `3.9` | Notices, orders, directions and proceedings under the Planning Acts |
+| `3.10` | Community Infrastructure Levy |
+| `3.11` | Conservation areas |
+| `3.12` | Compulsory purchase |
+| `3.13` | Contaminated land |
+| `3.14` | Radon |
+| `3.15` | Assets of community value |
 
-For `3.9`, distinguish at least:
+- **CON29R-01** `model` For 3.9, record the precise instrument or action, and whether it subsists or the authority has decided to take it. Never reduce it to a generic "planning issue". The instruments include enforcement, stop, listed-building enforcement and breach-of-condition notices; planning contravention notices; repairs notices and building preservation notices; directions restricting permitted development; revocation, modification and discontinuance orders; tree preservation orders; and proceedings to enforce a planning agreement or contribution.
+- **CON29R-02** `practice` Section 1.1 is the planning history. Its subparts (b)–(l) are not planning permissions (ROUTE-01); (j)–(l) belong to building control (CUR-05).
 
-- enforcement, stop, listed-building enforcement and breach-of-condition notices;
-- planning contravention and other breach-of-planning-control notices;
-- listed-building repairs/building-preservation measures;
-- directions restricting permitted development;
-- revocation/modification and discontinuance orders;
-- tree preservation orders;
-- proceedings to enforce a planning agreement or planning contribution.
+## CON29O · Optional enquiries (2016 form)
 
-Do not turn a `3.9` response into a generic “planning issue”; retain the precise instrument/action and whether it subsists or the authority has decided to initiate it.
+This is the working baseline; verify it against the form in hand.
 
-## 4. LLC1 / Local Land Charges explanation
+`4` road proposals by private bodies · `5` advertisements · `6` completion notices · `7` parks and countryside · `8` pipelines · `9` houses in multiple occupation · `10` noise abatement · `11` urban development areas · `12` enterprise zones, local development orders, BIDs · `13` inner urban improvement areas · `14` simplified planning zones · `15` land maintenance notices · `16` mineral consultation and safeguarding areas · `17` hazardous substance consents · `18` environmental and pollution notices · `19` food safety notices · `20` hedgerow notices · `21` flood defence and land drainage consents · `22` common land, town and village greens.
 
-The register and CON29 answer different questions. Local land charges are generally public-law financial charges or restrictions/obligations affecting land and binding successive owners or occupiers. Common register material includes:
+- **CON29O-01** `model` An unselected optional question is `not_searched`, never `negative`.
 
-- conditions imposed in planning permissions;
-- listed buildings and conservation areas;
-- tree preservation orders;
-- planning and enforcement notices;
-- highways agreements and other registrable agreements;
-- financial and environmental-health charges or notices.
+## HAND · Planning handoff
 
-Model an LLC entry as a source-reported `local_land_charge` with its originating authority, registration/creation details, category, burdened land, source wording and linked instrument/entity where established. Do not treat registration as the underlying permission, agreement or notice; link separate nodes.
+For each planning entry, apply the following rules.
 
-An empty LLC result does not establish absence of permissions, applications or all other matters. CON29 can report information not held as a local land charge, including refused or pending applications and highway status. Conversely, a planning-history list is not a substitute for the LLC result.
+- Create an application, and a decision where an outcome is stated (PERM-01). Classify with the alias table (VOCAB-05).
+- Create no permission at `search_report_only` (PERM-02).
+- Keep the search description as a `description_source` entry (PERM-05).
+- Generate candidate family links (REL-02) and turn cited parents into unresolved references (REL-03).
+- Carry the search's "as at" date and the response scope onto every entity derived from the search.
 
-## 5. Response and entry model
-
-Retain two linked layers:
-
-1. `responses[]`: every question/subquestion and answer in source order, including negative and qualified answers.
-2. `entries[]`: every listed record, linked to reusable domain nodes only where identity is justified.
-
-Minimum response fields:
-
-- source and canonical question codes/text;
-- verbatim answer and answer classification;
-- applicable land/date/scope;
-- entry IDs and page/block evidence.
-
-Minimum entry fields:
-
-- source entry type and verbatim text;
-- reference(s), authority and explicitly labelled dates;
-- source response IDs;
-- linked entity IDs or unresolved references;
-- exact evidence and review state.
-
-## 6. Interpretation rules
-
-- Distinguish `negative`, `not_answered`, `not_searched`, `not_applicable`, `see_attachment`, `illegible`, `qualified` and `entries_listed`.
-- Never convert failed extraction, a missing schedule or an unreadable page into a negative answer.
-- Preserve duplicate appearances under separate questions; resolve to a shared entity only with adequate identity evidence.
-- Planning history may include grants, refusals, withdrawals, pending applications and records outside the searched land. Do not convert every row into a permission.
-- Keep registration, application, validation, resolution, decision and issue dates distinct.
-- A search statement is `source_reported` until checked against the underlying instrument or register.
-- Record the spatial basis: search plan/boundary governs; address similarity does not establish identical land.
-- Retain unmapped questions and provider-specific sections. The canonical subject list is not a discard filter.
-
-## 7. Permission-family handoff
-
-For each planning item, apply [planning.permissions](permissions.md):
-
-- create provisional Application/Decision records where supported;
-- create a Permission only at the evidence threshold declared by the consuming contract;
-- type section 73, section 96A, reserved-matters and condition decisions separately;
-- preserve unresolved parent/condition references;
-- mark evidence level `search_report_only` until underlying documents are reviewed.
-
-## 8. Authoritative anchors
+## Sources
 
 - [Law Society: CON29 forms and guidance](https://www.lawsociety.org.uk/en/topics/property/con29-forms)
-- [HM Land Registry Practice Guide 79: Local Land Charges](https://www.gov.uk/government/publications/local-land-charges-pg79/local-land-charges)
-- [Search for local land charges](https://www.gov.uk/search-local-land-charges)
+- [HM Land Registry Practice Guide 79: local land charges](https://www.gov.uk/government/publications/local-land-charges-pg79/local-land-charges)
 - [HM Land Registry Local Land Charges Programme](https://www.gov.uk/government/publications/hm-land-registry-local-land-charges-programme/local-land-charges-programme)
 
-CON29 forms and guidance can change and are distributed under publisher terms. Store canonical topic mappings, not an assumed perpetual form text; re-verify the form/version before operational use.
+CON29 forms are published under the publisher's terms. Store code mappings, not the form text.
